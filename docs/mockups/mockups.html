@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<title>Stash mockups</title>
+<!--
+  Design mockups of the Stash SwiftUI screens, drawn in HTML so they can be
+  rendered without Xcode. Layout, copy and colours follow the Swift source
+  (App/Views, Keyboard/). These are not simulator screenshots.
+-->
+<style>
+  :root{
+    --accent:#5E7CE2; --text:#5E7CE2; --link:#2BA6A0; --photo:#E58A2E; --gif:#C2489B; --doc:#7A7F8C;
+    --bg:#F2F2F7; --card:#FFFFFF; --sep:#E3E3E8; --label:#000; --sec:#8A8A8E; --ter:#C4C4C7;
+    --kbd:#D1D3D9; --key:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:#E9E9EE;padding:40px;display:flex;flex-wrap:wrap;gap:40px;-webkit-font-smoothing:antialiased;color:var(--label)}
+  svg{display:block}
+  .phone{width:390px;height:844px;background:var(--bg);border-radius:54px;overflow:hidden;position:relative;
+         box-shadow:0 0 0 11px #1c1c1e,0 0 0 12px #3a3a3c,0 30px 60px rgba(0,0,0,.25);margin:12px}
+  .status{height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px 44px;font-weight:600;font-size:16px}
+  .status .r{display:flex;gap:6px;align-items:center}
+  .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;background:#000;border-radius:20px}
+  .nav{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:var(--accent);font-size:17px}
+  .nav .grp{display:flex;gap:18px;align-items:center}
+  .nav .title{color:var(--label);font-weight:600}
+  .large{font-size:34px;font-weight:700;padding:2px 16px 8px;letter-spacing:-.5px}
+  .search{margin:0 16px 14px;height:36px;background:#E3E3E8;border-radius:10px;display:flex;align-items:center;gap:6px;padding:0 8px;color:var(--sec);font-size:17px}
+  .section{margin:0 16px 8px;background:var(--card);border-radius:12px;overflow:hidden}
+  .header{font-size:13px;color:var(--sec);text-transform:uppercase;padding:14px 32px 6px;letter-spacing:.2px}
+  .footer{font-size:13px;color:var(--sec);padding:2px 32px 18px;line-height:1.35}
+  .row{display:flex;align-items:center;gap:12px;padding:9px 16px;min-height:44px;position:relative;font-size:17px}
+  .row + .row::before{content:"";position:absolute;top:0;left:72px;right:0;border-top:.5px solid var(--sep)}
+  .row.simple + .row.simple::before{left:16px}
+  .row.icon + .row.icon::before{left:54px}
+  .thumb{width:44px;height:44px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;position:relative;overflow:hidden}
+  .thumb .badge{position:absolute;right:3px;bottom:3px;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,.6);border-radius:8px;padding:0 3px}
+  .meta{flex:1;min-width:0}
+  .t{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px}
+  .s{font-size:12px;color:var(--sec);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .chips{display:flex;gap:4px;margin-top:4px}
+  .chip{font-size:11px;font-weight:500;padding:2px 6px;border-radius:10px}
+  .dot{width:8px;height:8px;border-radius:4px;background:var(--accent);flex:none}
+  .toast{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);background:rgba(250,250,252,.92);backdrop-filter:blur(20px);
+         border-radius:22px;padding:10px 18px;font-weight:600;font-size:15px;box-shadow:0 4px 18px rgba(0,0,0,.14)}
+  .status.light{color:#fff;position:relative;z-index:2}
+  .status.light svg{filter:invert(1)}
+  .home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#000}
+  .caption{font-size:13px;color:#555;text-align:center;margin-top:18px;max-width:390px}
+  .shot{display:flex;flex-direction:column;align-items:center}
+
+  /* Messages host app */
+  .chat{background:#fff;height:100%;display:flex;flex-direction:column}
+  .chathead{display:flex;flex-direction:column;align-items:center;padding:4px 0 10px;border-bottom:.5px solid var(--sep);background:#F9F9F9}
+  .avatar{width:44px;height:44px;border-radius:22px;background:linear-gradient(#A5ACB8,#858C99);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .msgs{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:6px;justify-content:flex-end}
+  .bub{max-width:72%;overflow-wrap:anywhere;padding:8px 13px;border-radius:18px;font-size:16px;line-height:1.3}
+  .in{background:#E9E9EB;align-self:flex-start}
+  .out{background:#0A84FF;color:#fff;align-self:flex-end}
+  .compose{display:flex;align-items:center;gap:8px;padding:6px 10px 8px;background:#fff}
+  .field{flex:1;border:1px solid #D6D6DA;border-radius:18px;padding:7px 12px;font-size:16px;min-height:36px;line-height:1.3}
+  .caret{display:inline-block;width:2px;height:19px;background:#0A84FF;vertical-align:-4px}
+  .kb{background:var(--kbd);height:340px;position:relative;flex:none}
+  .kbbar{height:40px;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:.5px solid rgba(0,0,0,.12)}
+  .seg{display:flex;background:rgba(118,118,128,.16);border-radius:8px;padding:2px;width:110px;height:30px}
+  .seg div{flex:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;border-radius:6px}
+  .seg .on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .polish{display:flex;align-items:center;gap:5px;color:var(--accent);font-size:15px;font-weight:500}
+  .kchips{display:flex;gap:6px;padding:6px 10px;overflow:hidden}
+  .kchip{font-size:12px;font-weight:600;padding:5px 10px;border-radius:14px;background:rgba(120,120,128,.12);white-space:nowrap}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 8px}
+  .cell{background:#F2F2F7;border-radius:8px;padding:6px;display:flex;align-items:center;gap:8px;height:46px}
+  .cell .ct{font-size:13px;line-height:1.2;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .cthumb{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex:none;position:relative;overflow:hidden}
+  .kbanner{position:absolute;top:46px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);backdrop-filter:blur(10px);
+           border-radius:16px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  .sysrow{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:var(--kbd);color:#3c3c43}
+  .keys{padding:8px 4px;display:flex;flex-direction:column;gap:9px}
+  .krow{display:flex;gap:6px}
+  .key{flex:1;height:42px;background:var(--key);border-radius:6px;box-shadow:0 1px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .key.w{flex:none;width:50px;font-size:15px}
+  .key.f{font-size:15px}
+  .key.p{background:var(--accent);color:#fff}
+  .menu{position:absolute;right:46px;top:36px;width:228px;background:rgba(246,246,248,.96);backdrop-filter:blur(30px);border-radius:13px;
+        box-shadow:0 10px 40px rgba(0,0,0,.25);overflow:hidden;z-index:3}
+  .mi{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;font-size:17px}
+  .mi + .mi{border-top:.5px solid #D8D8DC}
+
+  .mic{width:76px;height:76px;border-radius:38px;display:flex;align-items:center;justify-content:center;margin:0 auto}
+  .btnrow{color:var(--accent)}
+  .spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid #D0D0D5;border-top-color:#8A8A8E}
+  .paste{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto;background:var(--accent);color:#fff;border-radius:22px;
+         padding:12px 26px;font-weight:600;font-size:17px;width:max-content}
+  .check{color:var(--accent);font-weight:600}
+  .sheet{position:absolute;inset:0;background:rgba(0,0,0,.18)}
+  .sheetcard{position:absolute;left:0;right:0;top:64px;bottom:0;background:var(--bg);border-radius:12px 12px 0 0}
+  .grab{width:36px;height:5px;border-radius:3px;background:#C7C7CC;margin:6px auto 0}
+
+  /* Mac */
+  .mac{width:1180px;height:720px;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.25),0 30px 70px rgba(0,0,0,.28);display:flex}
+  .side{width:240px;background:rgba(236,236,240,.96);padding:52px 10px 10px;position:relative;border-right:.5px solid #D4D4D8}
+  .lights{position:absolute;top:18px;left:18px;display:flex;gap:8px}
+  .lights i{width:12px;height:12px;border-radius:6px;display:block}
+  .sh{font-size:11px;font-weight:600;color:#9A9AA0;padding:12px 10px 4px}
+  .si{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:6px;font-size:13px}
+  .si.sel{background:rgba(0,0,0,.08)}
+  .main{flex:1;display:flex;flex-direction:column}
+  .mtool{height:52px;display:flex;align-items:center;padding:0 16px;gap:14px;border-bottom:.5px solid #E2E2E6}
+  .mtool h1{font-size:15px;font-weight:700;flex:1}
+  .msearch{width:220px;height:28px;border-radius:7px;background:#EDEDF0;display:flex;align-items:center;gap:6px;padding:0 8px;color:#8A8A8E;font-size:13px}
+  .mlist{padding:6px 10px}
+  .mrow{display:flex;align-items:center;gap:12px;padding:7px 10px;border-radius:7px;font-size:13px}
+  .mrow .t{font-size:13px}
+  .mrow.sel{background:var(--accent);color:#fff}
+  .mrow.sel .s{color:rgba(255,255,255,.8)}
+  .mrow.sel .thumb{box-shadow:0 0 0 1.5px rgba(255,255,255,.7)}
+  .drop{position:absolute;inset:60px 8px 8px 8px;border:3px dashed var(--accent);border-radius:16px;pointer-events:none}
+</style>
+</head>
+<body>
+
+<!-- ============ 1. Library: Recents (iPhone) ============ -->
+<div class="shot">
+<div class="phone" id="library">
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span class="r" data-icon="status"></span></div>
+  <div class="nav">
+    <div class="grp"><span data-icon="back"></span><span style="margin-left:-14px">Stash</span><span style="margin-left:4px">Select</span></div>
+    <div class="grp"><span data-icon="paste"></span><span data-icon="plus"></span></div>
+  </div>
+  <div class="large">Recents</div>
+  <div class="search"><span data-icon="search"></span>Search everything</div>
+  <div class="section"><div class="row icon btnrow"><span data-icon="checkcircle"></span>Clear Recents</div></div>
+  <div class="footer">New saves wait here until you've reviewed them. Tagged items leave on their own after a few days (change this in Settings).</div>
+  <div class="section" data-rows="recents"></div>
+  <div class="toast">Copied</div>
+  <div class="home"></div>
+</div>
+<div class="caption">Library. Tap any item to copy it. Swipe right to pin, swipe left to delete or mark as reviewed.</div>
+</div>
+
+<!-- ============ 2. Keyboard: Stash tab ============ -->
+<div class="shot">
+<div class="phone" id="keyboard">
+  <div class="island"></div>
+  <div class="chat">
+    <div class="status" style="background:#F9F9F9"><span>9:41</span><span class="r" data-icon="status"></span></div>
+    <div class="chathead"><div class="avatar">SM</div><div style="font-size:12px;margin-top:4px">Sam ›</div></div>
+    <div class="msgs">
+      <div class="bub in">Do you have that link to the Swift docs?</div>
+      <div class="bub out">https://www.swift.org/documentation/</div>
+      <div class="bub in">Perfect, thanks. And the GIF from yesterday?</div>
+    </div>
+    <div class="compose"><span data-icon="plusgrey"></span><div class="field"><span class="caret"></span></div></div>
+    <div class="kb">
+      <div class="kbbar">
+        <div class="seg"><div class="on" data-icon="tray"></div><div>ABC</div></div>
+        <div style="flex:1"></div>
+        <div class="polish"><span data-icon="wand"></span>Polish</div>
+        <span data-icon="globe" style="margin-left:6px"></span>
+      </div>
+      <div class="kchips">
+        <span class="kchip" style="background:rgba(120,120,128,.25)">All</span>
+        <span class="kchip">Text</span><span class="kchip">Links</span><span class="kchip">Photos</span>
+        <span class="kchip" style="background:rgba(194,72,155,.22);color:var(--gif)">GIFs</span><span class="kchip">Docs</span>
+      </div>
+      <div class="grid" data-cells="kb"></div>
+      <div class="kbanner">Copied. Touch and hold the text field, then Paste.</div>
+    </div>
+    <div class="sysrow"><span data-icon="emoji"></span><span data-icon="micgrey"></span></div>
+  </div>
+  <div class="home"></div>
+</div>
+<div class="caption">Stash keyboard in any app. Snippets and links are typed straight in. Photos, GIFs and files are copied, ready to paste.</div>
+</div>
+
+<!-- ============ 3. Keyboard: ABC + Polish ============ -->
+<div class="shot">
+<div class="phone" id="polish">
+  <div class="island"></div>
+  <div class="chat">
+    <div class="status" style="background:#F9F9F9"><span>9:41</span><span class="r" data-icon="status"></span></div>
+    <div class="chathead"><div class="avatar">JL</div><div style="font-size:12px;margin-top:4px">Jordan ›</div></div>
+    <div class="msgs">
+      <div class="bub in">Can we lock in a time for the planning session?</div>
+    </div>
+    <div class="compose"><span data-icon="plusgrey"></span>
+      <div class="field">hey so i was thinking we could maybe move the meeting to thursday cause friday doesnt really work for me<span class="caret"></span></div></div>
+    <div class="kb" style="height:300px">
+      <div class="kbbar">
+        <div class="seg"><div data-icon="tray"></div><div class="on">ABC</div></div>
+        <div style="flex:1"></div>
+        <div class="polish"><span data-icon="wand"></span>Polish</div>
+        <span data-icon="globe" style="margin-left:6px"></span>
+      </div>
+      <div class="menu">
+        <div class="mi">Tidy up<span data-icon="wand"></span></div>
+        <div class="mi" style="background:rgba(0,0,0,.06)">Professional<span data-icon="briefcase"></span></div>
+        <div class="mi">Friendly<span data-icon="smile"></span></div>
+        <div class="mi">Shorter<span data-icon="shrink"></span></div>
+        <div class="mi">AI prompt<span data-icon="bubble"></span></div>
+      </div>
+      <div class="keys" data-keys></div>
+    </div>
+    <div class="sysrow"><span data-icon="emoji"></span><span data-icon="micgrey"></span></div>
+  </div>
+  <div class="home"></div>
+</div>
+<div class="caption">Polish rewrites the selected text, or the text before the cursor, with on-device Apple Intelligence.</div>
+</div>
+
+<!-- ============ 4. Dictate ============ -->
+<div class="shot">
+<div class="phone" id="dictate">
+  <div class="island"></div>
+  <div class="status light"><span>9:41</span><span class="r" data-icon="status"></span></div>
+  <div class="sheet" style="top:0;background:#000"></div>
+  <div class="sheetcard" style="top:58px">
+    <div class="grab"></div>
+    <div class="nav"><span>Cancel</span><span class="title">Dictate</span><div class="grp"><span data-icon="copy"></span><b>Save</b></div></div>
+    <div class="section" style="margin-top:12px;padding:16px 0 12px;text-align:center">
+      <div class="mic" style="background:var(--accent)"><span data-icon="micwhite"></span></div>
+      <div style="font-size:13px;color:var(--sec);margin-top:10px">Tap to dictate</div>
+    </div>
+    <div class="header">Text</div>
+    <div class="section">
+      <div class="row simple" style="align-items:flex-start;min-height:112px;font-size:16px;line-height:1.35">Hi Jordan, could we move the planning session to Thursday? Friday doesn't work for me. Let me know what time suits you.</div>
+      <div class="row simple btnrow" style="gap:8px"><span data-icon="undo"></span>Undo Polish</div>
+    </div>
+    <div class="header">Polish with Apple Intelligence</div>
+    <div class="section" data-rows="styles"></div>
+    <div class="footer">Runs on this device. Your words aren't sent anywhere.</div>
+  </div>
+  <div class="home"></div>
+</div>
+<div class="caption">Dictate in the app, then polish it: tidy up, make it professional, friendly or shorter, or turn it into a clear AI prompt.</div>
+</div>
+
+<!-- ============ 5. Quick Save ============ -->
+<div class="shot">
+<div class="phone" id="quicksave">
+  <div class="island"></div>
+  <div class="status light"><span>9:41</span><span class="r" data-icon="status"></span></div>
+  <div class="sheet" style="top:0;background:#000"></div>
+  <div class="sheetcard" style="top:58px">
+    <div class="grab"></div>
+    <div class="nav"><span>Cancel</span><span class="title">Quick Save</span><span style="width:52px"></span></div>
+    <div class="section" style="margin-top:12px;padding:16px 0"><div class="paste"><span data-icon="pastewhite"></span>Paste</div></div>
+    <div class="footer">Saves whatever is on your clipboard. Choose tags first if you want them.</div>
+    <div class="header">Tag on the way in</div>
+    <div class="section" data-rows="tags"></div>
+  </div>
+  <div class="home"></div>
+</div>
+<div class="caption">Quick Save opens from Control Centre, the Lock Screen or the Action button. One tap on Paste, with no "Allow Paste?" prompt.</div>
+</div>
+
+<!-- ============ 6. Sync Status ============ -->
+<div class="shot">
+<div class="phone" id="sync">
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span class="r" data-icon="status"></span></div>
+  <div class="nav"><span></span><span class="title">Sync Status</span><b>Done</b></div>
+  <div class="header" style="padding-top:18px">iCloud</div>
+  <div class="section">
+    <div class="row icon"><span data-icon="icloudok"></span>Signed in to iCloud</div>
+    <div class="row simple" style="justify-content:space-between">Items in library<span style="color:var(--sec)">128</span></div>
+  </div>
+  <div class="header">Activity</div>
+  <div class="section">
+    <div class="row simple" style="justify-content:space-between">Last sent<span style="color:var(--sec)">2 minutes ago</span></div>
+    <div class="row simple" style="justify-content:space-between">Last received<span style="color:var(--sec);display:flex;gap:6px;align-items:center"><span class="spinner" style="width:14px;height:14px;border-width:2px"></span>In progress</span></div>
+  </div>
+  <div class="section" style="margin-top:22px"><div class="row icon btnrow"><span data-icon="repair"></span>Repair Sync</div></div>
+  <div class="footer">Re-checks your iCloud account and queues every item to be sent again. Nothing is deleted. Sync runs on Apple's schedule, so changes can take a minute to arrive on your other devices.</div>
+  <div class="header">This session</div>
+  <div class="section" data-rows="log"></div>
+  <div class="footer" style="padding-top:10px">Your library is stored in your own private iCloud database and on your devices. Stash has no account, no server, no analytics and no tracking.</div>
+  <div class="home"></div>
+</div>
+<div class="caption">Sync status shows exactly when items were last sent and received, with a one-tap repair.</div>
+</div>
+
+<!-- ============ 7. Mac ============ -->
+<div class="shot" style="width:100%">
+<div class="mac" id="mac">
+  <div class="side">
+    <div class="lights"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></div>
+    <div class="si" data-si="clock|Recents|var(--accent)"></div>
+    <div class="si sel" data-si="trayfull|All Items|#8A8A8E"></div>
+    <div class="si" data-si="pin|Pinned|#FF9500"></div>
+    <div class="sh">Categories</div>
+    <div class="si" data-si="quote|Text Snippets|var(--text)"></div>
+    <div class="si" data-si="link|Links|var(--link)"></div>
+    <div class="si" data-si="photo|Photos|var(--photo)"></div>
+    <div class="si" data-si="sparkles|GIFs|var(--gif)"></div>
+    <div class="si" data-si="doc|Documents|var(--doc)"></div>
+    <div class="sh">Tags</div>
+    <div class="si"><i style="width:10px;height:10px;border-radius:5px;background:#007AFF;margin:0 3px"></i>Work</div>
+    <div class="si"><i style="width:10px;height:10px;border-radius:5px;background:#34C759;margin:0 3px"></i>Recipes</div>
+    <div class="si"><i style="width:10px;height:10px;border-radius:5px;background:#AF52DE;margin:0 3px"></i>Design</div>
+  </div>
+  <div class="main" style="position:relative">
+    <div class="mtool"><h1>All Items</h1><span data-icon="paste"></span><span data-icon="plus"></span>
+      <div class="msearch"><span data-icon="search"></span>Search everything</div></div>
+    <div class="mlist" data-rows="mac"></div>
+    <div class="drop"></div>
+    <div style="position:absolute;right:60px;bottom:70px;background:#fff;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.22);padding:8px;display:flex;align-items:center;gap:8px;font-size:12px">
+      <div class="thumb" style="width:36px;height:36px;background:linear-gradient(135deg,#7FB3E8,#3D6FB5)"></div>Site photo.jpg<span style="background:#34C759;color:#fff;border-radius:9px;padding:1px 6px;font-weight:700">+</span>
+    </div>
+  </div>
+</div>
+<div class="caption" style="max-width:none">Mac and iPad: sidebar with categories and tags. Drag files in to save them. Two items are selected here; press ⌘C to copy both.</div>
+</div>
+
+<script>
+const I = {
+  status:'<svg width="70" height="12" viewBox="0 0 70 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/><path d="M30 3.5a9 9 0 0 1 12 0l-1.5 1.6a7 7 0 0 0-9 0zM33 6.7a5 5 0 0 1 6 0L36 10z"/><rect x="46" y="1" width="21" height="10" rx="3" fill="none" stroke="#000" opacity=".4"/><rect x="48" y="3" width="15" height="6" rx="1.5"/><rect x="68" y="4" width="1.5" height="4" rx=".7" opacity=".4"/></svg>',
+  back:'<svg width="13" height="21" viewBox="0 0 13 21"><path d="M11 2 2.5 10.5 11 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  plus:'<svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2v16M2 10h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  paste:'<svg width="20" height="22" viewBox="0 0 20 22"><rect x="2" y="3.5" width="16" height="17" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="6" y="1.5" width="8" height="4" rx="1.5" fill="currentColor"/></svg>',
+  pastewhite:'<svg width="18" height="20" viewBox="0 0 20 22"><rect x="2" y="3.5" width="16" height="17" rx="3" fill="none" stroke="#fff" stroke-width="2"/><rect x="6" y="1.5" width="8" height="4" rx="1.5" fill="#fff"/></svg>',
+  search:'<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="5" fill="none" stroke="#8A8A8E" stroke-width="2"/><path d="m10.5 10.5 4 4" stroke="#8A8A8E" stroke-width="2" stroke-linecap="round"/></svg>',
+  checkcircle:'<svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m6.5 11.3 3 3 6-6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  quote:'<svg width="20" height="18" viewBox="0 0 20 18"><path d="M2 3h16M2 9h16M2 15h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  link:'<svg width="20" height="20" viewBox="0 0 20 20"><path d="M8.5 11.5a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M11.5 8.5a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  photo:'<svg width="22" height="18" viewBox="0 0 22 18"><rect x="1" y="1" width="20" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="m3 15 5-6 4 4 3-3 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="15" cy="6" r="1.8" fill="currentColor"/></svg>',
+  sparkles:'<svg width="20" height="20" viewBox="0 0 20 20"><path d="M8 2 9.6 7.4 15 9l-5.4 1.6L8 16l-1.6-5.4L1 9l5.4-1.6zM15.5 12l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" fill="currentColor"/></svg>',
+  doc:'<svg width="18" height="22" viewBox="0 0 18 22"><path d="M3 1h8l6 6v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M11 1v6h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  pin:'<svg width="12" height="14" viewBox="0 0 12 14"><path d="M3 0h6l-1 5 3 3H1l3-3zM6 8v6" fill="#FF9500" stroke="#FF9500" stroke-width="1.2"/></svg>',
+  pinsb:'<svg width="16" height="16" viewBox="0 0 12 14"><path d="M3 0h6l-1 5 3 3H1l3-3zM6 8v6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
+  clock:'<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4v4l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  trayfull:'<svg width="18" height="16" viewBox="0 0 18 16"><path d="M1 9h4l1.5 3h5L13 9h4v5a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zM1 9l2.5-7h11L17 9M5 5h8M6 2.8h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  tray:'<svg width="20" height="16" viewBox="0 0 18 16"><path d="M1 9h4l1.5 3h5L13 9h4v5a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zM1 9l2.5-7h11L17 9M5 5h8" fill="none" stroke="#000" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+  wand:'<svg width="18" height="18" viewBox="0 0 18 18"><path d="m2 16 9-9M12 1.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8L9.5 4l1.8-.7zM15.5 8l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5zM6 1l.5 1.3 1.3.5-1.3.5L6 4.6l-.5-1.3-1.3-.5 1.3-.5z" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  globe:'<svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="#000" stroke-width="1.6"/><ellipse cx="11" cy="11" rx="4" ry="9" fill="none" stroke="#000" stroke-width="1.6"/><path d="M2 11h18M4 6h14M4 16h14" stroke="#000" stroke-width="1.4"/></svg>',
+  emoji:'<svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" fill="none" stroke="#3c3c43" stroke-width="1.8"/><circle cx="9" cy="10.5" r="1.4" fill="#3c3c43"/><circle cx="17" cy="10.5" r="1.4" fill="#3c3c43"/><path d="M8 15.5a6 6 0 0 0 10 0" fill="none" stroke="#3c3c43" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  micgrey:'<svg width="18" height="26" viewBox="0 0 18 26"><rect x="5" y="1" width="8" height="15" rx="4" fill="#3c3c43"/><path d="M1.5 12a7.5 7.5 0 0 0 15 0M9 19.5V24" fill="none" stroke="#3c3c43" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  micwhite:'<svg width="24" height="34" viewBox="0 0 18 26"><rect x="5" y="1" width="8" height="15" rx="4" fill="#fff"/><path d="M1.5 12a7.5 7.5 0 0 0 15 0M9 19.5V24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  plusgrey:'<svg width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#E9E9EB"/><path d="M17 10v14M10 17h14" stroke="#8A8A8E" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  briefcase:'<svg width="20" height="18" viewBox="0 0 20 18"><rect x="1" y="5" width="18" height="12" rx="2.5" fill="none" stroke="#000" stroke-width="1.7"/><path d="M7 5V3a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 13 3v2M1 10h18" fill="none" stroke="#000" stroke-width="1.7"/></svg>',
+  smile:'<svg width="20" height="20" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" fill="none" stroke="#000" stroke-width="2"/><circle cx="9" cy="10.5" r="1.5"/><circle cx="17" cy="10.5" r="1.5"/><path d="M8 15.5a6 6 0 0 0 10 0" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>',
+  shrink:'<svg width="18" height="18" viewBox="0 0 18 18"><path d="M16 2l-5 5M11 3v4h4M2 16l5-5M7 15v-4H3" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  bubble:'<svg width="20" height="19" viewBox="0 0 20 19"><path d="M3 1h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H8l-5 4v-4a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM5 6h10M5 9.5h7" fill="none" stroke="#000" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+  copy:'<svg width="20" height="22" viewBox="0 0 20 22"><rect x="6" y="6" width="12" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 3.5V3a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  undo:'<svg width="20" height="18" viewBox="0 0 20 18"><path d="M6 1 1.5 5.5 6 10M2 5.5h10a6 6 0 0 1 0 12H8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  icloudok:'<svg width="26" height="20" viewBox="0 0 26 20"><path d="M7 18a6 6 0 0 1-.6-12A7.5 7.5 0 0 1 20.6 7.5 5.3 5.3 0 0 1 20 18z" fill="none" stroke="var(--accent)" stroke-width="1.8"/><path d="m9.5 12 2.5 2.5 5-5" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  repair:'<svg width="24" height="22" viewBox="0 0 24 22"><path d="M5 9a7.5 7.5 0 0 1 13-3l1.5 1.6M19 13a7.5 7.5 0 0 1-13 3l-1.5-1.6M19.5 3v4.6H15M4.5 19v-4.6H9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  ok:'<svg width="20" height="20" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9.5" fill="none" stroke="#34C759" stroke-width="1.8"/><path d="m6.5 11.3 3 3 6-6.3" fill="none" stroke="#34C759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  tick:'<svg width="16" height="14" viewBox="0 0 16 14"><path d="m1.5 7.5 4.5 4.5 8.5-10" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  del:'<svg width="24" height="18" viewBox="0 0 24 18"><path d="M7 1h15a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7L1 9z" fill="none" stroke="#000" stroke-width="1.6" stroke-linejoin="round"/><path d="m11 5.5 7 7M18 5.5l-7 7" stroke="#000" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  shift:'<svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2 2 10.5h4.5V18h7v-7.5H18z" fill="none" stroke="#000" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+};
+const KIND = {text:['quote','var(--text)'],link:['link','var(--link)'],photo:['photo','var(--photo)'],gif:['sparkles','var(--gif)'],doc:['doc','var(--doc)']};
+const TAGS = {Work:'#007AFF',Recipes:'#34C759',Design:'#AF52DE'};
+const IMG = {
+  whiteboard:'linear-gradient(135deg,#F4F1EA 0%,#E8E2D4 55%,#C9D7E8 56%,#F4F1EA 70%)',
+  gif:'radial-gradient(circle at 40% 40%,#FFD25E 0 30%,#F59E0B 31% 45%,#7C3AED 46%)',
+  site:'linear-gradient(135deg,#7FB3E8,#3D6FB5)',
+  palette:'linear-gradient(90deg,#264653 0 20%,#2A9D8F 20% 40%,#E9C46A 40% 60%,#F4A261 60% 80%,#E76F51 80%)',
+};
+const items = [
+  {k:'text',t:'Out-of-office reply',s:"Thanks for getting in touch. I'm away until Monday 24 November and will reply when I'm back.",tags:['Work'],n:1},
+  {k:'gif',t:'thumbs-up.gif',s:'GIF image · 1.2 MB',img:IMG.gif,n:1},
+  {k:'link',t:'Swift documentation',s:'https://www.swift.org/documentation/',pin:1,n:1},
+  {k:'photo',t:'Whiteboard notes.heic',s:'HEIF image · 2.4 MB',img:IMG.whiteboard,tags:['Work']},
+  {k:'doc',t:'Invoice template.pdf',s:'PDF document · 184 KB',tags:['Work']},
+  {k:'link',t:'Pasta e fagioli',s:'https://example.com/recipes/pasta-e-fagioli',tags:['Recipes']},
+  {k:'text',t:'Parking',s:'Level 3, bay 42. Exit via Lift B.'},
+];
+const ico = (n,c)=>`<span style="color:${c||'inherit'}">${I[n]}</span>`;
+function thumb(it,size=44){
+  const [sym,col]=KIND[it.k];
+  const inner = it.img ? `<div style="position:absolute;inset:0;background:${it.img}"></div>` : ico(sym,col);
+  const badge = it.k==='gif' ? '<span class="badge">GIF</span>' : '';
+  return `<div class="thumb" style="width:${size}px;height:${size}px;background:color-mix(in srgb,${col} 15%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,${col} 50%,transparent)">${inner}${badge}</div>`;
+}
+const chips = t => t ? `<div class="chips">${t.map(n=>`<span class="chip" style="background:color-mix(in srgb,${TAGS[n]} 20%,white);color:${TAGS[n]}">${n}</span>`).join('')}</div>` : '';
+function row(it,cls='row'){
+  return `<div class="${cls}">${thumb(it)}<div class="meta"><div class="t">${it.pin?I.pin:''}${it.t}</div><div class="s">${it.s}</div>${chips(it.tags)}</div>${it.n?'<span class="dot"></span>':''}</div>`;
+}
+document.querySelector('[data-rows=recents]').innerHTML = items.slice(0,5).map(i=>row(i)).join('');
+// Mac: pinned first
+const mac = [items[2],items[0],items[1],items[3],items[4],items[5],items[6],
+  {k:'photo',t:'Brand palette.png',s:'PNG image · 96 KB',img:IMG.palette,tags:['Design']}];
+document.querySelector('[data-rows=mac]').innerHTML = mac.map((i,ix)=>row(i, 'mrow'+(ix===3||ix===4?' sel':''))).join('');
+// keyboard grid
+const kb = [items[2],items[1],items[0],items[3],items[5],items[6],items[4],
+  {k:'gif',t:'happy-dance.gif',img:'radial-gradient(circle at 60% 40%,#34D399 0 28%,#0EA5E9 29% 50%,#1E3A8A 51%)'}];
+document.querySelector('[data-cells=kb]').innerHTML = kb.map(it=>{
+  const [sym,col]=KIND[it.k];
+  const inner = it.img?`<div style="position:absolute;inset:0;background:${it.img}"></div>`:ico(sym,col);
+  return `<div class="cell"><div class="cthumb" style="background:color-mix(in srgb,${col} 15%,white)">${inner}</div><div class="ct">${it.t}</div>${it.pin?I.pin:''}</div>`;
+}).join('');
+// dictate styles
+const styles=[['Tidy up','wand'],['Professional','briefcase'],['Friendly','smile'],['Shorter','shrink'],['AI prompt','bubble']];
+document.querySelector('[data-rows=styles]').innerHTML = styles.map(([t,i],ix)=>
+  `<div class="row icon btnrow" style="justify-content:space-between"><span style="display:flex;gap:12px;align-items:center"><span style="filter:invert(45%) sepia(60%) saturate(800%) hue-rotate(200deg)">${I[i]}</span>${t}</span>${ix===4?'<span class="spinner"></span>':''}</div>`).join('');
+// quick save tags
+document.querySelector('[data-rows=tags]').innerHTML = Object.entries(TAGS).map(([n,c],ix)=>
+  `<div class="row simple"><i style="width:12px;height:12px;border-radius:6px;background:${c}"></i><span style="flex:1">${n}</span>${ix===0?I.tick:''}</div>`).join('')
+  + `<div class="row simple"><span style="flex:1;color:var(--ter)">New tag</span><span style="color:var(--ter)">Add</span></div>`;
+// sync log
+const log=[['Send','2:47:12 pm',1],['Receive','2:46:58 pm',1],['Send','2:31:05 pm',1],['Setup','2:30:41 pm',1]];
+document.querySelector('[data-rows=log]').innerHTML = log.map(([k,t])=>
+  `<div class="row icon" style="justify-content:space-between"><span style="display:flex;gap:12px;align-items:center">${I.ok}${k}</span><span style="font-size:12px;color:var(--sec)">${t}</span></div>`).join('');
+// keys
+const rows=[['Q','W','E','R','T','Y','U','I','O','P'],['A','S','D','F','G','H','J','K','L'],['Z','X','C','V','B','N','M']];
+document.querySelector('[data-keys]').innerHTML =
+  `<div class="krow">${rows[0].map(k=>`<div class="key">${k.toLowerCase()}</div>`).join('')}</div>
+   <div class="krow" style="padding:0 16px">${rows[1].map(k=>`<div class="key">${k.toLowerCase()}</div>`).join('')}</div>
+   <div class="krow"><div class="key w">${I.shift}</div>${rows[2].map(k=>`<div class="key">${k.toLowerCase()}</div>`).join('')}<div class="key w">${I.del}</div></div>
+   <div class="krow"><div class="key w">123</div><div class="key f">space</div><div class="key w p">send</div></div>`;
+// sidebar items
+document.querySelectorAll('[data-si]').forEach(el=>{
+  const [i,t,c]=el.dataset.si.split('|');
+  el.innerHTML = `<span style="color:${c};width:18px;display:flex;justify-content:center">${I[i==='pin'?'pinsb':i]}</span>${t}`;
+});
+// generic icons
+document.querySelectorAll('[data-icon]').forEach(el=>{ if(!el.innerHTML) el.innerHTML = I[el.dataset.icon]||''; });
+</script>
+</body>
+</html>

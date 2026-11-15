@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key><string>en-AU</string>
+	<key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+	<key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
+	<key>CFBundleDisplayName</key><string>Stash</string>
+	<key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>StashAppGroupID</key><string>$(APP_GROUP_ID)</string>
+	<key>StashCloudKitContainer</key><string>$(ICLOUD_CONTAINER)</string>
+	<key>CFBundlePackageType</key><string>APPL</string>
+	<key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+	<key>CFBundleURLTypes</key>
+	<array><dict>
+		<key>CFBundleURLName</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleURLSchemes</key><array><string>stash</string></array>
+	</dict></array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Stash uses the microphone only while you dictate, to turn your speech into a text snippet. Audio is processed on this Mac.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Stash transcribes your dictation on this Mac.</string>
+</dict>
+</plist>
