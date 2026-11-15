@@ -7,11 +7,11 @@
 	<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
 	<key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
-	<key>CFBundleDisplayName</key><string>Stash</string>
+	<key>CFBundleDisplayName</key><string>Typo</string>
 	<key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>StashAppGroupID</key><string>$(APP_GROUP_ID)</string>
-	<key>StashCloudKitContainer</key><string>$(ICLOUD_CONTAINER)</string>
+	<key>TypoAppGroupID</key><string>$(APP_GROUP_ID)</string>
+	<key>TypoCloudKitContainer</key><string>$(ICLOUD_CONTAINER)</string>
 	<key>CFBundlePackageType</key><string>XPC!</string>
 	<key>NSExtension</key>
 	<dict>

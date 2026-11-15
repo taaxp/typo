@@ -5,80 +5,101 @@ struct KeyboardRootView: View {
     let actions: KeyboardActions
     let libraryAvailable: Bool
 
-    @State private var tab: Tab = .stash
-    enum Tab { case stash, keys }
+    @State private var tab: Tab = .typo
+    enum Tab { case typo, keys }
 
     var body: some View {
         VStack(spacing: 0) {
             topBar
-            Divider()
-            ZStack(alignment: .top) {
+            // Banner sits at the bottom so it never covers the category chips.
+            ZStack(alignment: .bottom) {
                 switch tab {
-                case .stash:
-                    if libraryAvailable {
-                        StashGrid(actions: actions)
-                    } else {
-                        FullAccessPrompt()
-                    }
+                case .typo:
+                    if libraryAvailable { TypoGrid(actions: actions) } else { FullAccessPrompt() }
                 case .keys:
                     TypingKeys(actions: actions)
                 }
                 if let banner = actions.banner {
-                    Text(banner)
+                    Label(banner, systemImage: "checkmark.circle.fill")
                         .font(.footnote.weight(.semibold))
-                        .padding(.horizontal, 12).padding(.vertical, 6)
-                        .background(.thinMaterial, in: Capsule())
-                        .padding(.top, 6)
-                        .transition(.opacity)
+                        .symbolRenderingMode(.hierarchical)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .glassEffect()
+                        .padding(.bottom, 6)
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
         }
-        .animation(.default, value: actions.banner)
+        .animation(.smooth, value: actions.banner)
     }
 
+    /// Liquid Glass control strip: mode switch, Polish, next keyboard.
     private var topBar: some View {
-        HStack(spacing: 8) {
-            Picker("Mode", selection: $tab) {
-                Image(systemName: "tray.full").tag(Tab.stash).accessibilityLabel("Stash")
-                Text("ABC").tag(Tab.keys)
-            }
-            .pickerStyle(.segmented)
-            .frame(width: 110)
-
-            Spacer()
-
-            if case .available = actions.polishAvailability {
-                Menu {
-                    ForEach(PolishStyle.allCases) { style in
-                        Button(style.title, systemImage: style.symbol) { Task { await actions.polish(style) } }
-                    }
-                } label: {
-                    if actions.isPolishing {
-                        ProgressView()
-                    } else {
-                        Label("Polish", systemImage: "wand.and.stars").labelStyle(.titleAndIcon).font(.subheadline)
-                    }
+        GlassEffectContainer(spacing: 10) {
+            HStack(spacing: 10) {
+                HStack(spacing: 2) {
+                    modeButton(.typo) { Image(systemName: "square.grid.2x2.fill") }
+                        .accessibilityLabel("Typo library")
+                    modeButton(.keys) { Text("ABC").font(.footnote.weight(.bold)) }
+                        .accessibilityLabel("Letters")
                 }
-                .accessibilityHint("Rewrites the selected text, or the text before the cursor, with Apple Intelligence")
-            }
+                .padding(3)
+                .glassEffect()
 
-            if actions.needsGlobe {
-                Button { actions.nextKeyboard() } label: { Image(systemName: "globe") }
+                Spacer()
+
+                if case .available = actions.polishAvailability {
+                    Menu {
+                        ForEach(PolishStyle.allCases) { style in
+                            Button(style.title, systemImage: style.symbol) { Task { await actions.polish(style) } }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            if actions.isPolishing { ProgressView().controlSize(.small) }
+                            else { Image(systemName: "wand.and.stars").foregroundStyle(Hues.named("Dusk").gradient) }
+                            Text("Polish").font(.subheadline.weight(.semibold))
+                        }
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                    }
+                    .glassEffect(.regular.tint(Hues.named("Dusk").base.opacity(0.15)).interactive())
+                    .accessibilityHint("Rewrites the selected text, or the text before the cursor, with Apple Intelligence")
+                }
+
+                if actions.needsGlobe {
+                    Button { actions.nextKeyboard() } label: {
+                        Image(systemName: "globe").frame(width: 36, height: 36)
+                    }
+                    .buttonStyle(.plain)
+                    .glassEffect(.regular.interactive(), in: Circle())
                     .accessibilityLabel("Next keyboard")
+                }
             }
         }
-        .padding(.horizontal, 10)
-        .frame(height: 40)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+    }
+
+    private func modeButton<Label: View>(_ value: Tab, @ViewBuilder label: () -> Label) -> some View {
+        Button { withAnimation(.smooth) { tab = value } } label: {
+            label()
+                .frame(width: 48, height: 30)
+                .foregroundStyle(tab == value ? Color.white : Color.primary)
+                .background {
+                    if tab == value { Capsule().fill(Hues.named("Ocean").gradient) }
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(tab == value ? .isSelected : [])
     }
 }
 
 /// Library grid, grouped by category, pinned and manual order first.
-private struct StashGrid: View {
+private struct TypoGrid: View {
     let actions: KeyboardActions
-    @Query(sort: \StashItem.sortIndex, order: .reverse) private var items: [StashItem]
+    @Query(sort: \TypoItem.sortIndex, order: .reverse) private var items: [TypoItem]
     @State private var kind: ItemKind?
 
-    private var visible: [StashItem] {
+    private var visible: [TypoItem] {
         let filtered = kind.map { k in items.filter { $0.kind == k } } ?? items
         return filtered.filter(\.isPinned) + filtered.filter { !$0.isPinned }
     }
@@ -87,17 +108,17 @@ private struct StashGrid: View {
         VStack(spacing: 0) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
-                    chip(nil, title: "All", colour: .secondary)
-                    ForEach(ItemKind.allCases) { k in chip(k, title: k.shortTitle, colour: CategoryColours.color(for: k)) }
+                    chip(nil, title: "All", hue: Hues.named("Fog"))
+                    ForEach(ItemKind.allCases) { k in chip(k, title: k.shortTitle, hue: CategoryColours.hue(for: k)) }
                 }
-                .padding(.horizontal, 10).padding(.vertical, 6)
+                .padding(.horizontal, 10).padding(.vertical, 4)
             }
             if visible.isEmpty {
                 ContentUnavailableView("Nothing saved yet", systemImage: "tray",
-                                       description: Text("Share to Stash from any app, or open Stash to paste."))
+                                       description: Text("Share to Typo from any app, or open Typo to paste."))
             } else {
                 ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 6)], spacing: 6) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
                         ForEach(visible) { item in
                             KeyboardItemCell(item: item)
                                 .onTapGesture { actions.use(item) }
@@ -111,45 +132,51 @@ private struct StashGrid: View {
                                 .accessibilityHint(item.kind.isInsertableAsText ? "Types this into the text field" : "Copies this to the clipboard")
                         }
                     }
-                    .padding(.horizontal, 8).padding(.bottom, 8)
+                    .padding(.horizontal, 8).padding(.vertical, 6)
                 }
             }
         }
     }
 
-    private func chip(_ k: ItemKind?, title: String, colour: Color) -> some View {
-        Button { kind = k } label: {
-            Text(title).font(.caption.weight(.semibold))
-                .padding(.horizontal, 10).padding(.vertical, 5)
-                .background(kind == k ? colour.opacity(0.25) : Color.secondary.opacity(0.1), in: Capsule())
-                .foregroundStyle(kind == k ? colour : .primary)
+    private func chip(_ k: ItemKind?, title: String, hue: Hue) -> some View {
+        let on = kind == k
+        return Button { withAnimation(.smooth) { kind = k } } label: {
+            HStack(spacing: 5) {
+                HueDot(hue: hue, size: 8)
+                Text(title).font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(on ? hue.inkColor : .primary)
+            .padding(.horizontal, 11).padding(.vertical, 6)
+            .background(on ? AnyShapeStyle(hue.softGradient) : AnyShapeStyle(.thinMaterial), in: Capsule())
+            .overlay(Capsule().strokeBorder(.white.opacity(0.45), lineWidth: 0.5))
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(kind == k ? .isSelected : [])
+        .accessibilityAddTraits(on ? .isSelected : [])
     }
 }
 
 private struct KeyboardItemCell: View {
-    let item: StashItem
+    let item: TypoItem
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 9) {
             // Thumbnails only: the keyboard has a small memory budget, so full files are never loaded here.
-            ZStack {
-                RoundedRectangle(cornerRadius: 6).fill(CategoryColours.color(for: item.kind).opacity(0.15))
-                if let data = item.thumbnail, let image = UIImage(data: data) {
-                    Image(uiImage: image).resizable().scaledToFill()
-                        .frame(width: 32, height: 32).clipShape(RoundedRectangle(cornerRadius: 6))
-                } else {
-                    Image(systemName: item.kind.symbol).font(.caption).foregroundStyle(CategoryColours.color(for: item.kind))
-                }
+            if let data = item.thumbnail, let image = UIImage(data: data) {
+                Image(uiImage: image).resizable().scaledToFill()
+                    .frame(width: 34, height: 34)
+                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            } else {
+                HueTile(hue: CategoryColours.hue(for: item.kind), symbol: item.kind.symbol, size: 34)
             }
-            .frame(width: 32, height: 32)
-            Text(item.displayTitle).font(.footnote).lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
-            if item.isPinned { Image(systemName: "pin.fill").font(.caption2).foregroundStyle(.orange) }
+            Text(item.displayTitle).font(.footnote.weight(.medium)).lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            if item.isPinned {
+                Image(systemName: "pin.fill").font(.caption2).foregroundStyle(Hues.named("Amber").gradient)
+            }
         }
-        .padding(6)
-        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
+        .padding(7)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.white.opacity(0.4), lineWidth: 0.5))
         .contentShape(Rectangle())
     }
 }
@@ -159,7 +186,7 @@ private struct FullAccessPrompt: View {
         ContentUnavailableView {
             Label("Allow Full Access", systemImage: "lock")
         } description: {
-            Text("To show your Stash library here, go to Settings › General › Keyboard › Keyboards › Stash and turn on Allow Full Access. The keyboard doesn't connect to the internet or store what you type.")
+            Text("To show your Typo library here, go to Settings › General › Keyboard › Keyboards › Typo and turn on Allow Full Access. The keyboard doesn't connect to the internet or store what you type.")
         }
     }
 }

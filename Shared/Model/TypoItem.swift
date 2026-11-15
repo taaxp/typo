@@ -38,14 +38,14 @@ enum ItemKind: String, CaseIterable, Codable, Identifiable, Sendable {
         }
     }
 
-    /// Default colour (hex). Users can override per category in Settings.
-    var defaultColorHex: String {
+    /// Default named hue (see `Hues`). Users can change it per category in Settings.
+    var defaultHueName: String {
         switch self {
-        case .text: "#5E7CE2"
-        case .link: "#2BA6A0"
-        case .photo: "#E58A2E"
-        case .gif: "#C2489B"
-        case .document: "#7A7F8C"
+        case .text: "Ocean"
+        case .link: "Lagoon"
+        case .photo: "Amber"
+        case .gif: "Blush"
+        case .document: "Fog"
         }
     }
 
@@ -58,7 +58,7 @@ enum ItemKind: String, CaseIterable, Codable, Identifiable, Sendable {
 /// CloudKit-backed SwiftData rules apply: every stored property has a default or is
 /// optional, there are no unique constraints, and relationships are optional.
 @Model
-final class StashItem {
+final class TypoItem {
     var uuid: UUID = UUID()
     var kindRaw: String = ItemKind.text.rawValue
     var title: String = ""
@@ -124,21 +124,21 @@ final class StashItem {
     func touch() { modifiedAt = Date() }
 }
 
-/// A user-defined, colour-coded tag.
+/// A user-defined tag with a named gradient hue.
 @Model
 final class Tag {
     var uuid: UUID = UUID()
     var name: String = ""
-    var colorHex: String = "#8E8E93"
+    /// Name of a hue in `Hues.all`, e.g. "Sage".
+    var hueName: String = "Sage"
     var createdAt: Date = Date()
     var modifiedAt: Date = Date()
-    var items: [StashItem]? = []
+    var items: [TypoItem]? = []
 
-    init(name: String, colorHex: String) {
+    init(name: String, hueName: String) {
         self.name = name
-        self.colorHex = colorHex
+        self.hueName = hueName
     }
 
-    static let palette = ["#FF3B30", "#FF9500", "#FFCC00", "#34C759", "#00C7BE",
-                          "#30B0C7", "#007AFF", "#5856D6", "#AF52DE", "#FF2D55", "#A2845E", "#8E8E93"]
+    var hue: Hue { Hues.named(hueName) }
 }

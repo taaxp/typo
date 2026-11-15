@@ -7,11 +7,11 @@
 	<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
 	<key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
-	<key>CFBundleDisplayName</key><string>Stash</string>
+	<key>CFBundleDisplayName</key><string>Typo</string>
 	<key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>StashAppGroupID</key><string>$(APP_GROUP_ID)</string>
-	<key>StashCloudKitContainer</key><string>$(ICLOUD_CONTAINER)</string>
+	<key>TypoAppGroupID</key><string>$(APP_GROUP_ID)</string>
+	<key>TypoCloudKitContainer</key><string>$(ICLOUD_CONTAINER)</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>LSRequiresIPhoneOS</key><true/>
 	<key>UILaunchScreen</key><dict/>
@@ -28,13 +28,13 @@
 	<key>CFBundleURLTypes</key>
 	<array><dict>
 		<key>CFBundleURLName</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-		<key>CFBundleURLSchemes</key><array><string>stash</string></array>
+		<key>CFBundleURLSchemes</key><array><string>typo</string></array>
 	</dict></array>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Stash uses the microphone only while you hold the dictate button, to turn your speech into a text snippet. Audio is processed on this device.</string>
+	<string>Typo uses the microphone only while you hold the dictate button, to turn your speech into a text snippet. Audio is processed on this device.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Stash transcribes your dictation on this device.</string>
+	<string>Typo transcribes your dictation on this device.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Stash can save photos and GIFs from your library back to Photos when you ask it to.</string>
+	<string>Typo can save photos and GIFs from your library back to Photos when you ask it to.</string>
 </dict>
 </plist>

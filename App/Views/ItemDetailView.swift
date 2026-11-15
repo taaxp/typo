@@ -4,14 +4,14 @@ import QuickLook
 
 /// Rename, edit text, tag, polish and preview one item.
 struct ItemDetailView: View {
-    @Bindable var item: StashItem
+    @Bindable var item: TypoItem
     @Environment(AppModel.self) private var model
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @State private var previewURL: URL?
     @State private var polishing = false
 
-    private var library: StashLibrary { StashLibrary(context: context) }
+    private var library: TypoLibrary { TypoLibrary(context: context) }
 
     var body: some View {
         Form {
@@ -67,6 +67,8 @@ struct ItemDetailView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .background { AmbientBackground(hues: [CategoryColours.hue(for: item.kind), Hues.named("Mist"), CategoryColours.hue(for: item.kind)]) }
         .navigationTitle(item.displayTitle)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
@@ -98,7 +100,7 @@ struct ItemDetailView: View {
     }
 }
 
-/// Pick existing tags or create a new colour-coded one.
+/// Pick existing tags or create a new one. Each tag shows its gradient and hue name.
 struct TagPicker: View {
     @Binding var selection: [Tag]
     @Environment(\.modelContext) private var context
@@ -106,29 +108,84 @@ struct TagPicker: View {
     @State private var newName = ""
 
     var body: some View {
-        ForEach(tags) { tag in
-            Button {
-                if let index = selection.firstIndex(of: tag) { selection.remove(at: index) } else { selection.append(tag) }
-            } label: {
-                HStack {
-                    Circle().fill(Color(hex: tag.colorHex)).frame(width: 12, height: 12)
-                    Text(tag.name).foregroundStyle(.primary)
-                    Spacer()
-                    if selection.contains(tag) { Image(systemName: "checkmark").foregroundStyle(Color.accentColor) }
+        if !tags.isEmpty {
+            FlowLayout(spacing: 8) {
+                ForEach(tags) { tag in
+                    let isOn = selection.contains(tag)
+                    Button {
+                        if let index = selection.firstIndex(of: tag) { selection.remove(at: index) } else { selection.append(tag) }
+                    } label: {
+                        HStack(spacing: 6) {
+                            HueDot(hue: tag.hue, size: 10)
+                            Text(tag.name).font(.subheadline.weight(.medium))
+                            if isOn { Image(systemName: "checkmark").font(.caption.weight(.bold)) }
+                        }
+                        .foregroundStyle(isOn ? tag.hue.inkColor : .primary)
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(isOn ? AnyShapeStyle(tag.hue.softGradient) : AnyShapeStyle(.thinMaterial), in: Capsule())
+                        .overlay(Capsule().strokeBorder(isOn ? tag.hue.base.opacity(0.6) : .white.opacity(0.4), lineWidth: 0.75))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(tag.name), \(tag.hueName)")
+                    .accessibilityAddTraits(isOn ? .isSelected : [])
                 }
             }
-            .buttonStyle(.plain)
-            .accessibilityAddTraits(selection.contains(tag) ? .isSelected : [])
+            .padding(.vertical, 4)
         }
         HStack {
             TextField("New tag", text: $newName).onSubmit(addTag)
-            Button("Add", action: addTag).disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
+            Button("Add", action: addTag)
+                .buttonStyle(.glass)
+                .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
         }
     }
 
     private func addTag() {
-        guard let tag = StashLibrary(context: context).tag(named: newName, create: true) else { return }
+        guard let tag = TypoLibrary(context: context).tag(named: newName, create: true) else { return }
         if !selection.contains(tag) { selection.append(tag) }
         newName = ""
+    }
+}
+
+/// Wraps chips onto as many lines as needed.
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let rows = arrange(subviews, width: proposal.width ?? .infinity)
+        let height = rows.map(\.height).reduce(0, +) + spacing * CGFloat(max(rows.count - 1, 0))
+        let width = rows.map(\.width).max() ?? 0
+        return CGSize(width: proposal.width ?? width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for row in arrange(subviews, width: bounds.width) {
+            var x = bounds.minX
+            for index in row.indices {
+                let size = subviews[index].sizeThatFits(.unspecified)
+                subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+                x += size.width + spacing
+            }
+            y += row.height + spacing
+        }
+    }
+
+    private struct Row { var indices: [Int] = []; var width: CGFloat = 0; var height: CGFloat = 0 }
+
+    private func arrange(_ subviews: Subviews, width: CGFloat) -> [Row] {
+        var rows: [Row] = [Row()]
+        for index in subviews.indices {
+            let size = subviews[index].sizeThatFits(.unspecified)
+            if !rows[rows.count - 1].indices.isEmpty, rows[rows.count - 1].width + spacing + size.width > width {
+                rows.append(Row())
+            }
+            var row = rows[rows.count - 1]
+            row.width += (row.indices.isEmpty ? 0 : spacing) + size.width
+            row.height = max(row.height, size.height)
+            row.indices.append(index)
+            rows[rows.count - 1] = row
+        }
+        return rows
     }
 }

@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct StashApp: App {
+struct TypoApp: App {
     @State private var model = AppModel()
     private let container: ModelContainer
 
@@ -11,7 +11,7 @@ struct StashApp: App {
             container = try SharedContainer.app()
         } catch {
             // Usually a schema/entitlement mismatch during development.
-            fatalError("Could not open the Stash library: \(error)")
+            fatalError("Could not open the Typo library: \(error)")
         }
     }
 
@@ -87,14 +87,14 @@ struct RootView: View {
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { Task { await refresh() } }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .stashInboxChanged)) { _ in
+            .onReceive(NotificationCenter.default.publisher(for: .typoInboxChanged)) { _ in
                 Task { await refresh() }
             }
             .onAppear { InboxObserver.start() }
     }
 
     private func refresh() async {
-        let library = StashLibrary(context: context)
+        let library = TypoLibrary(context: context)
         let imported = library.importInbox()
         if imported > 0 { model.show("Saved \(imported) from Share") }
         library.ageOutRecents()
@@ -109,7 +109,7 @@ struct RootView: View {
 extension AppRoute: Identifiable { var id: String { rawValue } }
 
 extension Notification.Name {
-    static let stashInboxChanged = Notification.Name("StashInboxChanged")
+    static let typoInboxChanged = Notification.Name("TypoInboxChanged")
 }
 
 /// Bridges the extension's Darwin notification into NotificationCenter.
@@ -122,7 +122,7 @@ enum InboxObserver {
         CFNotificationCenterAddObserver(
             CFNotificationCenterGetDarwinNotifyCenter(), nil,
             { _, _, _, _, _ in
-                DispatchQueue.main.async { NotificationCenter.default.post(name: .stashInboxChanged, object: nil) }
+                DispatchQueue.main.async { NotificationCenter.default.post(name: .typoInboxChanged, object: nil) }
             },
             AppGroup.inboxDarwinNotification as CFString, nil, .deliverImmediately)
     }

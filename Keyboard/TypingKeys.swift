@@ -31,7 +31,11 @@ struct TypingKeys: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        GlassEffectContainer(spacing: 4) { keys }
+    }
+
+    private var keys: some View {
+        VStack(spacing: 9) {
             row(rows[0])
             row(rows[1]).padding(.horizontal, layer == .letters ? 16 : 0)
             HStack(spacing: 6) {
@@ -98,14 +102,13 @@ struct TypingKeys: View {
                 if let systemImage { Image(systemName: systemImage) } else { Text(label ?? "") }
             }
             .font(.system(size: label?.count == 1 ? 22 : 15))
-            .frame(maxWidth: flexible ? .infinity : nil, minHeight: 42)
+            .frame(maxWidth: flexible ? .infinity : nil, minHeight: 44)
             .frame(width: wide ? 50 : nil)
-            .background(prominent ? Color.accentColor : Color(uiColor: .systemBackground),
-                        in: RoundedRectangle(cornerRadius: 6))
             .foregroundStyle(prominent ? .white : .primary)
-            .shadow(color: .black.opacity(0.25), radius: 0, y: 1)
         }
         .buttonStyle(.plain)
+        // Liquid Glass keycaps, matching the system keyboard on iOS 26.
+        .glassEffect(prominent ? .regular.tint(Hues.named("Ocean").base).interactive() : .regular.interactive(), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
@@ -117,9 +120,8 @@ private struct DeleteKey: View {
     var body: some View {
         Image(systemName: "delete.left")
             .font(.system(size: 17))
-            .frame(width: 50, height: 42)
-            .background(Color(uiColor: .systemBackground), in: RoundedRectangle(cornerRadius: 6))
-            .shadow(color: .black.opacity(0.25), radius: 0, y: 1)
+            .frame(width: 50, height: 44)
+            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .contentShape(Rectangle())
             .onLongPressGesture(minimumDuration: 0.35, perform: {}, onPressingChanged: { pressing in
                 if pressing {

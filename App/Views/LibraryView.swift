@@ -17,11 +17,23 @@ enum LibraryFilter: Hashable {
         case .tag(let tag): tag.name
         }
     }
+
+    /// Hues that tint the ambient background for this view.
+    var hues: [Hue] {
+        switch self {
+        case .recents: [Hues.named("Ocean"), Hues.named("Dusk"), Hues.named("Lagoon")]
+        case .all: [Hues.named("Mist"), Hues.named("Dusk"), Hues.named("Sage")]
+        case .pinned: [Hues.named("Amber"), Hues.named("Coral"), Hues.named("Honey")]
+        case .kind(let kind):
+            let hue = CategoryColours.hue(for: kind)
+            return [hue, Hues.named("Mist"), hue]
+        case .tag(let tag): [tag.hue, Hues.named("Mist"), tag.hue]
+        }
+    }
 }
 
 struct LibraryView: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.modelContext) private var context
     @Query(sort: \Tag.name) private var tags: [Tag]
     @State private var filter: LibraryFilter? = .recents
     @State private var showSettings = false
@@ -30,30 +42,33 @@ struct LibraryView: View {
         NavigationSplitView {
             List(selection: $filter) {
                 Section {
-                    sidebarRow(.recents, symbol: "clock.badge", colour: .accentColor)
-                    sidebarRow(.all, symbol: "tray.full", colour: .secondary)
-                    sidebarRow(.pinned, symbol: "pin", colour: .orange)
+                    sidebarRow(.recents, symbol: "clock.fill", hue: Hues.named("Ocean"))
+                    sidebarRow(.all, symbol: "tray.full.fill", hue: Hues.named("Fog"))
+                    sidebarRow(.pinned, symbol: "pin.fill", hue: Hues.named("Amber"))
                 }
                 Section("Categories") {
                     ForEach(ItemKind.allCases) { kind in
-                        sidebarRow(.kind(kind), symbol: kind.symbol, colour: CategoryColours.color(for: kind))
+                        sidebarRow(.kind(kind), symbol: kind.symbol, hue: CategoryColours.hue(for: kind))
                     }
                 }
                 if !tags.isEmpty {
                     Section("Tags") {
                         ForEach(tags) { tag in
-                            Label { Text(tag.name) } icon: {
-                                Circle().fill(Color(hex: tag.colorHex)).frame(width: 10, height: 10)
+                            HStack(spacing: 10) {
+                                HueDot(hue: tag.hue, size: 14)
+                                Text(tag.name)
+                                Spacer()
+                                Text(tag.hueName).font(.caption).foregroundStyle(.tertiary)
                             }
                             .tag(LibraryFilter.tag(tag))
                         }
                     }
                 }
             }
-            .navigationTitle("Stash")
+            .navigationTitle("Typo")
             #if os(iOS)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: { Image(systemName: "gearshape") }
                         .accessibilityLabel("Settings")
                 }
@@ -65,8 +80,8 @@ struct LibraryView: View {
         }
     }
 
-    private func sidebarRow(_ filter: LibraryFilter, symbol: String, colour: Color) -> some View {
-        Label { Text(filter.title) } icon: { Image(systemName: symbol).foregroundStyle(colour) }
+    private func sidebarRow(_ filter: LibraryFilter, symbol: String, hue: Hue) -> some View {
+        Label { Text(filter.title) } icon: { HueTile(hue: hue, symbol: symbol, size: 26) }
             .tag(filter)
     }
 }
@@ -78,12 +93,12 @@ struct ItemListView: View {
 
     @Environment(AppModel.self) private var model
     @Environment(\.modelContext) private var context
-    @Query(sort: \StashItem.sortIndex, order: .reverse) private var allItems: [StashItem]
+    @Query(sort: \TypoItem.sortIndex, order: .reverse) private var allItems: [TypoItem]
 
     @State private var search = ""
     @State private var selection = Set<PersistentIdentifier>()
-    @State private var editing: StashItem?
-    @State private var renaming: StashItem?
+    @State private var editing: TypoItem?
+    @State private var renaming: TypoItem?
     @State private var renameText = ""
     @State private var previewURL: URL?
     @State private var showImageURLPrompt = false
@@ -94,10 +109,10 @@ struct ItemListView: View {
     @State private var editMode: EditMode = .inactive
     #endif
 
-    private var library: StashLibrary { StashLibrary(context: context) }
+    private var library: TypoLibrary { TypoLibrary(context: context) }
 
     /// Pinned first, then manual order.
-    private var visibleItems: [StashItem] {
+    private var visibleItems: [TypoItem] {
         let filtered = allItems.filter { item in
             switch filter {
             case .recents: !item.isReviewed
@@ -112,56 +127,68 @@ struct ItemListView: View {
     }
 
     private var canReorder: Bool { search.isEmpty && filter != .recents }
+    private var selectedItems: [TypoItem] { visibleItems.filter { selection.contains($0.persistentModelID) } }
 
-    private var selectedItems: [StashItem] { visibleItems.filter { selection.contains($0.persistentModelID) } }
+    private var isEditing: Bool {
+        #if os(iOS)
+        editMode.isEditing
+        #else
+        false
+        #endif
+    }
 
     var body: some View {
         let items = visibleItems
         List(selection: $selection) {
             if filter == .recents && !items.isEmpty {
-                Section {
-                    Button("Clear Recents", systemImage: "checkmark.circle") {
-                        withAnimation { library.markReviewed(items) }
-                    }
-                } footer: {
-                    Text("New saves wait here until you've reviewed them. Tagged items leave on their own after a few days (change this in Settings).")
-                }
+                Text("\(items.count) new \(items.count == 1 ? "save" : "saves") waiting for review. Tagged items leave on their own after a few days.")
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .selectionDisabled()
             }
             ForEach(items) { item in
                 ItemRow(item: item)
                     .tag(item.persistentModelID)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                     .itemProvider { dragProvider(for: item) }
                     .swipeActions(edge: .leading) {
                         Button { library.togglePin(item) } label: {
                             Label(item.isPinned ? "Unpin" : "Pin", systemImage: item.isPinned ? "pin.slash" : "pin")
                         }
-                        .tint(.orange)
+                        .tint(Hues.named("Amber").base)
                     }
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) { library.delete([item]) } label: { Label("Delete", systemImage: "trash") }
                         if !item.isReviewed {
                             Button { library.markReviewed([item]) } label: { Label("Reviewed", systemImage: "checkmark") }
-                                .tint(.green)
+                                .tint(Hues.named("Sage").base)
                         }
                     }
             }
             .onMove(perform: canReorder ? { (from: IndexSet, to: Int) in library.move(items, from: from, to: to) } as ((IndexSet, Int) -> Void)? : nil)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background { AmbientBackground(hues: filter.hues) }
         // Tap (iOS) / double-click or Return (Mac) copies. Long-press / right-click for more.
         .contextMenu(forSelectionType: PersistentIdentifier.self) { ids in
             contextMenu(for: items.filter { ids.contains($0.persistentModelID) })
         } primaryAction: { ids in
             copy(items.filter { ids.contains($0.persistentModelID) })
         }
-        .overlay {
-            if items.isEmpty { emptyState }
-        }
+        .overlay { if items.isEmpty { emptyState } }
         .overlay {
             if dropTargeted {
-                RoundedRectangle(cornerRadius: 16).strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 3, dash: [8]))
-                    .padding(8).allowsHitTesting(false)
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .strokeBorder(Hues.named("Ocean").gradient, style: StrokeStyle(lineWidth: 3, dash: [10, 8]))
+                    .background(Hues.named("Ocean").base.opacity(0.06), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .padding(10).allowsHitTesting(false)
             }
         }
+        .safeAreaInset(edge: .bottom) { dock }
         .onDrop(of: [.item], isTargeted: $dropTargeted) { providers in
             Task { await ingest(providers) }
             return true
@@ -195,49 +222,92 @@ struct ItemListView: View {
         .quickLookPreview($previewURL)
     }
 
+    // MARK: Dock
+
+    /// Floating Liquid Glass dock: Paste, Dictate, Quick Save, More.
+    @ViewBuilder
+    private var dock: some View {
+        GlassEffectContainer(spacing: 16) {
+            if isEditing {
+                HStack(spacing: 12) {
+                    Button("Copy \(selection.count)", systemImage: "doc.on.doc") { copy(selectedItems) }
+                        .disabled(selection.isEmpty)
+                    Button("Delete", systemImage: "trash", role: .destructive) {
+                        library.delete(selectedItems)
+                        selection.removeAll()
+                    }
+                    .disabled(selection.isEmpty)
+                }
+                .buttonStyle(.glass)
+                .controlSize(.large)
+            } else {
+                HStack(spacing: 14) {
+                    // The system Paste button reads the clipboard without the "Allow Paste?" prompt.
+                    PasteButton(supportedContentTypes: [.item]) { providers in
+                        Task { await ingest(providers) }
+                    }
+                    .buttonBorderShape(.capsule)
+                    .tint(Hues.named("Ocean").base)
+
+                    Button { model.route = .dictate } label: {
+                        Image(systemName: "mic.fill")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 52, height: 52)
+                            .background(Hues.named("Dusk").gradient, in: Circle())
+                            .shadow(color: Hues.named("Dusk").base.opacity(0.45), radius: 10, y: 4)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dictate")
+
+                    Button { model.route = .quickSave } label: {
+                        Image(systemName: "tag.fill").font(.title3).frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Quick Save with tags")
+
+                    addMenu
+                }
+                .padding(.horizontal, 14).padding(.vertical, 8)
+                .glassEffect(.regular.interactive())
+            }
+        }
+        .padding(.bottom, 8)
+    }
+
+    private var addMenu: some View {
+        Menu {
+            Button("Photo or GIF from URL…", systemImage: "photo.badge.arrow.down") {
+                imageURLText = ""
+                showImageURLPrompt = true
+            }
+            Button("Import Files…", systemImage: "doc.badge.plus") { showFileImporter = true }
+            Divider()
+            Button("Sync Status", systemImage: "icloud") { model.route = .sync }
+        } label: {
+            Image(systemName: "ellipsis").font(.title3.weight(.semibold)).frame(width: 44, height: 44)
+        }
+        .accessibilityLabel("More ways to add")
+    }
+
     // MARK: Toolbar
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        ToolbarItemGroup(placement: .primaryAction) {
-            // The system Paste button reads the clipboard without the "Allow Paste?" prompt.
-            PasteButton(supportedContentTypes: [.item]) { providers in
-                Task { await ingest(providers) }
-            }
-            .labelStyle(.iconOnly)
-
-            Menu {
-                Button("Quick Save with Tags…", systemImage: "tag") { model.route = .quickSave }
-                Button("Dictate…", systemImage: "mic") { model.route = .dictate }
-                Button("Photo or GIF from URL…", systemImage: "photo.badge.arrow.down") {
-                    imageURLText = ""
-                    showImageURLPrompt = true
+        if filter == .recents && !visibleItems.isEmpty {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Clear", systemImage: "checkmark.circle") {
+                    withAnimation { library.markReviewed(visibleItems) }
                 }
-                Button("Import Files…", systemImage: "doc.badge.plus") { showFileImporter = true }
-                Divider()
-                Button("Sync Status", systemImage: "icloud") { model.route = .sync }
-            } label: {
-                Label("Add", systemImage: "plus")
+                .accessibilityLabel("Clear Recents")
             }
         }
         #if os(iOS)
-        ToolbarItemGroup(placement: .bottomBar) {
-            if editMode.isEditing {
-                Button("Copy \(selection.count)", systemImage: "doc.on.doc") { copy(selectedItems) }
-                    .disabled(selection.isEmpty)
-                Spacer()
-                Button("Delete", systemImage: "trash", role: .destructive) {
-                    library.delete(selectedItems)
-                    selection.removeAll()
-                }
-                .disabled(selection.isEmpty)
-            }
-        }
-        ToolbarItem(placement: .topBarLeading) {
-            Button(editMode.isEditing ? "Done" : "Select") {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(isEditing ? "Done" : "Select") {
                 withAnimation {
-                    editMode = editMode.isEditing ? .inactive : .active
-                    if !editMode.isEditing { selection.removeAll() }
+                    editMode = isEditing ? .inactive : .active
+                    if !isEditing { selection.removeAll() }
                 }
             }
         }
@@ -247,7 +317,7 @@ struct ItemListView: View {
     // MARK: Context menu
 
     @ViewBuilder
-    private func contextMenu(for items: [StashItem]) -> some View {
+    private func contextMenu(for items: [TypoItem]) -> some View {
         if items.count > 1 {
             Button("Copy \(items.count) Items", systemImage: "doc.on.doc") { copy(items) }
             Button("Delete \(items.count) Items", systemImage: "trash", role: .destructive) { library.delete(items) }
@@ -277,7 +347,7 @@ struct ItemListView: View {
 
     // MARK: Actions
 
-    private func copy(_ items: [StashItem]) {
+    private func copy(_ items: [TypoItem]) {
         guard !items.isEmpty else { return }
         Clipboard.copy(items)
         model.show(items.count == 1 ? "Copied" : "Copied \(items.count) items")
@@ -321,7 +391,7 @@ struct ItemListView: View {
         model.show("Imported \(count)")
     }
 
-    private func dragProvider(for item: StashItem) -> NSItemProvider {
+    private func dragProvider(for item: TypoItem) -> NSItemProvider {
         if let url = TempFiles.url(for: item), let provider = NSItemProvider(contentsOf: url) {
             provider.suggestedName = item.filename
             return provider
@@ -339,7 +409,7 @@ struct ItemListView: View {
                                    description: Text("New saves from the share sheet, clipboard, drag and drop or Shortcuts appear here."))
         } else {
             ContentUnavailableView("Nothing here yet", systemImage: "tray",
-                                   description: Text("Paste, drop a file here, or share to Stash from any app."))
+                                   description: Text("Paste, drop a file here, or share to Typo from any app."))
         }
     }
 }

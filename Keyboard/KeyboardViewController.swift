@@ -2,11 +2,11 @@ import UIKit
 import SwiftUI
 import SwiftData
 
-/// The Stash keyboard.
+/// The Typo keyboard.
 ///
-/// - **Stash** tab: your library. Tap a text snippet or link to type it into the
+/// - **Typo** tab: your library. Tap a text snippet or link to type it into the
 ///   current field. Tap a photo, GIF or file to copy it, then paste.
-/// - **ABC** tab: a basic QWERTY keyboard so you can stay in Stash while typing.
+/// - **ABC** tab: a basic QWERTY keyboard so you can stay in Typo while typing.
 /// - **Polish**: rewrites the selected text (or the text before the cursor) with
 ///   on-device Apple Intelligence.
 ///
@@ -53,7 +53,7 @@ final class KeyboardViewController: UIInputViewController {
         actions.polishAvailability = TextPolisher.availability
 
         if container == nil, hasFullAccess {
-            container = try? StashStore.makeContainer(role: .readOnly)
+            container = try? TypoStore.makeContainer(role: .readOnly)
         }
         let root = KeyboardRootView(actions: actions, libraryAvailable: container != nil)
         if let container {
@@ -96,7 +96,7 @@ final class KeyboardActions {
     }
 
     /// Text and links are typed straight in. Everything else goes on the clipboard.
-    func use(_ item: StashItem) {
+    func use(_ item: TypoItem) {
         if item.kind.isInsertableAsText {
             insert(item.text)
             UIDevice.current.playInputClick()
@@ -107,14 +107,14 @@ final class KeyboardActions {
 
     static let maxCopyBytes = 20 * 1024 * 1024
 
-    func copy(_ item: StashItem) {
+    func copy(_ item: TypoItem) {
         guard hasFullAccess else {
             show("Turn on Allow Full Access to copy photos and files")
             return
         }
         // Keyboards run with a small memory budget; very large files would get the keyboard terminated.
         guard item.byteCount <= Self.maxCopyBytes else {
-            show("Too large to copy from the keyboard. Open Stash to copy it.")
+            show("Too large to copy from the keyboard. Open Typo to copy it.")
             return
         }
         Clipboard.copy([item])

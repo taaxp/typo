@@ -2,7 +2,7 @@ import UIKit
 import SwiftUI
 import SwiftData
 
-/// "Share to Stash" from any app. Classifies what was shared, lets you tag it,
+/// "Share to Typo" from any app. Classifies what was shared, lets you tag it,
 /// and drops it in the App Group inbox for the app to import.
 final class ShareViewController: UIViewController {
     override func viewDidLoad() {
@@ -25,16 +25,16 @@ final class ShareViewController: UIViewController {
 
     /// Reads tag names (read-only) so you can pick existing tags.
     @MainActor
-    private static func existingTagNames() -> [(name: String, hex: String)] {
-        guard let container = try? StashStore.makeContainer(role: .readOnly) else { return [] }
+    private static func existingTagNames() -> [(name: String, hue: String)] {
+        guard let container = try? TypoStore.makeContainer(role: .readOnly) else { return [] }
         let tags = (try? ModelContext(container).fetch(FetchDescriptor<Tag>(sortBy: [SortDescriptor(\.name)]))) ?? []
-        return tags.map { ($0.name, $0.colorHex) }
+        return tags.map { ($0.name, $0.hueName) }
     }
 }
 
 private struct ShareView: View {
     let providers: [NSItemProvider]
-    let existingTags: [(name: String, hex: String)]
+    let existingTags: [(name: String, hue: String)]
     let finish: () -> Void
     let cancel: () -> Void
 
@@ -53,7 +53,7 @@ private struct ShareView: View {
                         Label {
                             Text(summary(of: draft)).lineLimit(2)
                         } icon: {
-                            Image(systemName: draft.kind.symbol).foregroundStyle(CategoryColours.color(for: draft.kind))
+                            HueTile(hue: CategoryColours.hue(for: draft.kind), symbol: draft.kind.symbol, size: 28)
                         }
                     }
                     if let error { Text(error).foregroundStyle(.red) }
@@ -64,7 +64,7 @@ private struct ShareView: View {
                             if selectedTags.contains(tag.name) { selectedTags.remove(tag.name) } else { selectedTags.insert(tag.name) }
                         } label: {
                             HStack {
-                                Circle().fill(Color(hex: tag.hex)).frame(width: 12, height: 12)
+                                HueDot(hue: Hues.named(tag.hue), size: 12)
                                 Text(tag.name).foregroundStyle(.primary)
                                 Spacer()
                                 if selectedTags.contains(tag.name) { Image(systemName: "checkmark") }
@@ -74,7 +74,7 @@ private struct ShareView: View {
                     TextField("New tag", text: $newTag)
                 }
             }
-            .navigationTitle("Stash")
+            .navigationTitle("Typo")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel", action: cancel) }

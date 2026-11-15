@@ -11,10 +11,10 @@ import SwiftData
 /// - The **share extension** never writes to the store. It drops files into the
 ///   App Group inbox (see `Inbox`) and the app imports them. This avoids two
 ///   processes running CloudKit mirroring on one store.
-enum StashStore {
+enum TypoStore {
     enum Role { case app, readOnly }
 
-    static let schema = Schema([StashItem.self, Tag.self])
+    static let schema = Schema([TypoItem.self, Tag.self])
 
     static func makeContainer(role: Role) throws -> ModelContainer {
         let config: ModelConfiguration
@@ -22,14 +22,14 @@ enum StashStore {
         switch role {
         case .app:
             config = ModelConfiguration(
-                "Stash",
+                "Typo",
                 schema: schema,
                 groupContainer: .identifier(AppGroup.id),
                 cloudKitDatabase: .private(AppGroup.cloudKitContainer)
             )
         case .readOnly:
             config = ModelConfiguration(
-                "Stash",
+                "Typo",
                 schema: schema,
                 allowsSave: false,
                 groupContainer: .identifier(AppGroup.id),
@@ -38,7 +38,7 @@ enum StashStore {
         }
         #else
         config = ModelConfiguration(
-            "Stash",
+            "Typo",
             schema: schema,
             cloudKitDatabase: .private(AppGroup.cloudKitContainer)
         )
@@ -52,12 +52,12 @@ enum StashStore {
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try! ModelContainer(for: schema, configurations: [config])
         let ctx = container.mainContext
-        let work = Tag(name: "Work", colorHex: "#007AFF")
+        let work = Tag(name: "Work", hueName: "Mist")
         ctx.insert(work)
-        let a = StashItem(kind: .text, text: "Thanks for getting in touch. I'll reply by end of day.")
+        let a = TypoItem(kind: .text, text: "Thanks for getting in touch. I'll reply by end of day.")
         a.tags = [work]
         ctx.insert(a)
-        let b = StashItem(kind: .link, title: "Swift documentation", text: "https://www.swift.org/documentation/")
+        let b = TypoItem(kind: .link, title: "Swift documentation", text: "https://www.swift.org/documentation/")
         b.isPinned = true
         ctx.insert(b)
         return container

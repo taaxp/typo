@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Typo app icon. Full-bleed square: iOS and macOS apply the rounded mask. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8A78E0"/>   <!-- Dusk -->
+      <stop offset="0.5" stop-color="#4B63E6"/> <!-- Ocean -->
+      <stop offset="1" stop-color="#2F9FB4"/>   <!-- Lagoon -->
+    </linearGradient>
+    <radialGradient id="blush" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFC2CF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFC2CF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lagoon" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#8EE3E0" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#8EE3E0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="honey" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFD0DC" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#FBE7A4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Glass keycap fill: pale, slightly brighter at the top. -->
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.62"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.30"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="0.45" stop-color="#FFFFFF" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="glyph" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3F318F"/>  <!-- Dusk ink -->
+      <stop offset="1" stop-color="#213A9E"/>  <!-- Ocean ink -->
+    </linearGradient>
+    <linearGradient id="spark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFC2CF"/>
+      <stop offset="1" stop-color="#F0A044"/>
+    </linearGradient>
+
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="refract" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="28"/></filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#1B1F5E" flood-opacity="0.38"/>
+    </filter>
+    <filter id="glyphShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#1B1F5E" flood-opacity="0.25"/>
+    </filter>
+
+    <clipPath id="cap"><rect x="232" y="232" width="560" height="560" rx="150"/></clipPath>
+
+    <g id="field">
+      <rect width="1024" height="1024" fill="url(#bg)"/>
+      <circle cx="170" cy="150" r="430" fill="url(#blush)"/>
+      <circle cx="900" cy="930" r="460" fill="url(#lagoon)"/>
+      <circle cx="860" cy="170" r="300" fill="url(#honey)"/>
+    </g>
+  </defs>
+
+  <!-- Background aurora -->
+  <use href="#field"/>
+
+  <g transform="translate(512 512) scale(1.12) translate(-512 -512)">
+  <!-- Liquid Glass keycap: blurred copy of the background inside, frosted fill, bright rim -->
+  <g filter="url(#shadow)">
+    <rect x="232" y="232" width="560" height="560" rx="150" fill="#FFFFFF" fill-opacity="0.01"/>
+  </g>
+  <g clip-path="url(#cap)">
+    <g filter="url(#refract)" transform="translate(512 512) scale(1.18) translate(-512 -512)"><use href="#field"/></g>
+    <rect x="232" y="232" width="560" height="560" fill="url(#glass)"/>
+    <!-- top sheen -->
+    <ellipse cx="470" cy="250" rx="330" ry="120" fill="#FFFFFF" opacity="0.35"/>
+  </g>
+  <rect x="236" y="236" width="552" height="552" rx="146" fill="none" stroke="url(#rim)" stroke-width="8"/>
+
+  <!-- Glyph: a "T" whose stem is a text cursor (I-beam) -->
+  <g filter="url(#glyphShadow)" fill="url(#glyph)">
+    <rect x="352" y="356" width="320" height="76" rx="38"/>       <!-- crossbar -->
+    <rect x="474" y="356" width="76" height="330" rx="38"/>       <!-- stem / caret -->
+    <rect x="420" y="634" width="184" height="52" rx="26"/>       <!-- cursor foot -->
+  </g>
+
+  <!-- AI sparkle -->
+  <path d="M700 268 C708 312 720 324 764 332 C720 340 708 352 700 396 C692 352 680 340 636 332 C680 324 692 312 700 268 Z"
+        fill="url(#spark)" stroke="#FFFFFF" stroke-opacity="0.8" stroke-width="5" stroke-linejoin="round"/>
+  </g>
+</svg>

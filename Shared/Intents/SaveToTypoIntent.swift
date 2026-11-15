@@ -3,13 +3,13 @@ import Foundation
 import SwiftData
 import UniformTypeIdentifiers
 
-/// "Save to Stash" for Shortcuts and the Action button.
+/// "Save to Typo" for Shortcuts and the Action button.
 ///
-/// Typical Shortcut:  Get Clipboard → Save to Stash (Tags: Work)
+/// Typical Shortcut:  Get Clipboard → Save to Typo (Tags: Work)
 /// Shortcuts passes text, URLs, images and files; each is classified like a share.
-struct SaveToStashIntent: AppIntent {
-    static let title: LocalizedStringResource = "Save to Stash"
-    static let description = IntentDescription("Saves text, links, photos, GIFs or files to Stash, optionally with tags.")
+struct SaveToTypoIntent: AppIntent {
+    static let title: LocalizedStringResource = "Save to Typo"
+    static let description = IntentDescription("Saves text, links, photos, GIFs or files to Typo, optionally with tags.")
 
     @Parameter(title: "Text or Link")
     var text: String?
@@ -21,7 +21,7 @@ struct SaveToStashIntent: AppIntent {
     var tags: [TagEntity]?
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Save \(\.$text) \(\.$files) to Stash") {
+        Summary("Save \(\.$text) \(\.$files) to Typo") {
             \.$tags
         }
     }
@@ -42,11 +42,11 @@ struct SaveToStashIntent: AppIntent {
         guard !drafts.isEmpty else { throw IngestError.nothingUsable }
 
         let container = try SharedContainer.app()
-        let library = StashLibrary(context: container.mainContext)
+        let library = TypoLibrary(context: container.mainContext)
         let tagModels = (tags ?? []).compactMap { library.tag(named: $0.name, create: true) }
         let saved = library.save(drafts, tags: tagModels)
         let noun = saved.count == 1 ? "item" : "items"
-        return .result(value: saved.count, dialog: "Saved \(saved.count) \(noun) to Stash.")
+        return .result(value: saved.count, dialog: "Saved \(saved.count) \(noun) to Typo.")
     }
 }
 
@@ -57,7 +57,7 @@ enum SharedContainer {
 
     static func app() throws -> ModelContainer {
         if let cached { return cached }
-        let container = try StashStore.makeContainer(role: .app)
+        let container = try TypoStore.makeContainer(role: .app)
         cached = container
         return container
     }
@@ -79,7 +79,7 @@ struct TagQuery: EntityStringQuery {
     @MainActor
     private func all() throws -> [TagEntity] {
         let container = try SharedContainer.app()
-        return StashLibrary(context: container.mainContext).allTags().map { TagEntity(id: $0.name, name: $0.name) }
+        return TypoLibrary(context: container.mainContext).allTags().map { TagEntity(id: $0.name, name: $0.name) }
     }
 
     @MainActor
@@ -102,13 +102,13 @@ struct TagQuery: EntityStringQuery {
 
 // MARK: - App Shortcuts (appear in Spotlight, Shortcuts and the Action button picker)
 
-struct StashShortcuts: AppShortcutsProvider {
+struct TypoShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: OpenQuickSaveIntent(),
                     phrases: ["Quick save to \(.applicationName)", "Save clipboard to \(.applicationName)"],
                     shortTitle: "Quick Save", systemImageName: "tray.and.arrow.down")
-        AppShortcut(intent: SaveToStashIntent(),
+        AppShortcut(intent: SaveToTypoIntent(),
                     phrases: ["Save to \(.applicationName)"],
-                    shortTitle: "Save to Stash", systemImageName: "plus.square.on.square")
+                    shortTitle: "Save to Typo", systemImageName: "plus.square.on.square")
     }
 }

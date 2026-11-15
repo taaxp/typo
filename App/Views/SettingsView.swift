@@ -7,20 +7,29 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Tag.name) private var tags: [Tag]
     @AppStorage(AppGroup.Key.recentsAgeOutDays, store: AppGroup.defaults) private var ageOutDays = 3
-    @State private var colourRevision = 0
+    @State private var hueRevision = 0
 
     var body: some View {
         Form {
-            Section("Category colours") {
+            Section {
                 ForEach(ItemKind.allCases) { kind in
-                    ColorPicker(selection: Binding(
-                        get: { _ = colourRevision; return CategoryColours.color(for: kind) },
-                        set: { CategoryColours.set($0, for: kind); colourRevision += 1 }
-                    ), supportsOpacity: false) {
-                        Label(kind.title, systemImage: kind.symbol)
+                    NavigationLink {
+                        HueChooser(title: kind.title, selection: Binding(
+                            get: { _ = hueRevision; return CategoryColours.hueName(for: kind) },
+                            set: { CategoryColours.set($0, for: kind); hueRevision += 1 }))
+                    } label: {
+                        HStack(spacing: 12) {
+                            HueTile(hue: CategoryColours.hue(for: kind), symbol: kind.symbol, size: 30)
+                            Text(kind.title)
+                            Spacer()
+                            Text(CategoryColours.hueName(for: kind)).foregroundStyle(.secondary)
+                        }
                     }
+                    .id("\(kind.rawValue)-\(hueRevision)")
                 }
-                Button("Reset to Defaults") { CategoryColours.reset(); colourRevision += 1 }
+                Button("Reset to Defaults") { CategoryColours.reset(); hueRevision += 1 }
+            } header: {
+                Text("Categories")
             }
 
             Section {
@@ -36,7 +45,14 @@ struct SettingsView: View {
             Section("Tags") {
                 if tags.isEmpty { Text("No tags yet").foregroundStyle(.secondary) }
                 ForEach(tags) { tag in
-                    TagSettingsRow(tag: tag)
+                    NavigationLink { TagEditor(tag: tag) } label: {
+                        HStack(spacing: 12) {
+                            HueDot(hue: tag.hue, size: 16)
+                            Text(tag.name)
+                            Spacer()
+                            Text("\(tag.items?.count ?? 0)").foregroundStyle(.secondary).monospacedDigit()
+                        }
+                    }
                 }
                 .onDelete { offsets in
                     offsets.map { tags[$0] }.forEach(context.delete)
@@ -47,9 +63,9 @@ struct SettingsView: View {
             #if os(iOS)
             Section {
                 Text("""
-                1. Open Settings › General › Keyboard › Keyboards › Add New Keyboard… › Stash.
-                2. Tap Stash and turn on Allow Full Access. Stash needs it to read your library and to put photos, GIFs and files on the clipboard. The Stash keyboard doesn't connect to the internet and stores nothing you type.
-                3. In any app, touch and hold the globe key and choose Stash.
+                1. Open Settings › General › Keyboard › Keyboards › Add New Keyboard… › Typo.
+                2. Tap Typo and turn on Allow Full Access. Typo needs it to read your library and to put photos, GIFs and files on the clipboard. The Typo keyboard doesn't connect to the internet and stores nothing you type.
+                3. In any app, touch and hold the globe key and choose Typo.
                 """)
                 .font(.callout)
                 if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -60,7 +76,7 @@ struct SettingsView: View {
             }
 
             Section {
-                Text("Add Stash to Control Centre or the Lock Screen: edit Control Centre or your Lock Screen and search for Stash. For the Action button: Settings › Action Button › Controls › Stash Quick Save.")
+                Text("Edit Control Centre or your Lock Screen and search for Typo. For the Action button: Settings › Action Button › Controls › Typo Quick Save.")
                     .font(.callout)
             } header: {
                 Text("Control Centre, Lock Screen and Action button")
@@ -80,24 +96,51 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .navigationTitle("Settings")
         #if os(iOS)
-        .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done", systemImage: "checkmark") { dismiss() } } }
         #endif
     }
 }
 
-private struct TagSettingsRow: View {
+/// Pick a named hue, with a live preview.
+private struct HueChooser: View {
+    let title: String
+    @Binding var selection: String
+
+    var body: some View {
+        Form {
+            Section {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 8) {
+                        HueTile(hue: Hues.named(selection), symbol: "sparkles", size: 72)
+                        Text(selection).font(.title3.weight(.semibold))
+                    }
+                    Spacer()
+                }
+                .padding(.vertical, 8)
+            }
+            Section("Hues") { HuePicker(selection: $selection) }
+        }
+        .formStyle(.grouped)
+        .navigationTitle(title)
+    }
+}
+
+private struct TagEditor: View {
     @Bindable var tag: Tag
 
     var body: some View {
-        HStack {
-            ColorPicker("", selection: Binding(
-                get: { Color(hex: tag.colorHex) },
-                set: { tag.colorHex = $0.hexString; tag.modifiedAt = Date() }
-            ), supportsOpacity: false)
-            .labelsHidden()
-            TextField("Name", text: $tag.name)
-            Spacer()
-            Text("\(tag.items?.count ?? 0)").foregroundStyle(.secondary).monospacedDigit()
+        Form {
+            Section("Name") { TextField("Name", text: $tag.name) }
+            Section {
+                HStack { Spacer(); HueChip(title: tag.name.isEmpty ? "Tag" : tag.name, hue: tag.hue); Spacer() }
+                    .padding(.vertical, 6)
+            } header: { Text("Preview") }
+            Section("Hue") {
+                HuePicker(selection: Binding(get: { tag.hueName }, set: { tag.hueName = $0; tag.modifiedAt = Date() }))
+            }
         }
+        .formStyle(.grouped)
+        .navigationTitle(tag.name)
     }
 }

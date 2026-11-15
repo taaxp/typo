@@ -11,7 +11,7 @@ import AppKit
 /// Messages, Mail or Notes gives the image or file, not a path.
 @MainActor
 enum Clipboard {
-    static func copy(_ items: [StashItem]) {
+    static func copy(_ items: [TypoItem]) {
         guard !items.isEmpty else { return }
         #if canImport(UIKit)
         UIPasteboard.general.setItems(items.map(representations(for:)))
@@ -34,7 +34,7 @@ enum Clipboard {
     private static let isExtension = Bundle.main.bundlePath.hasSuffix(".appex")
 
     /// Type identifier → value, for one pasteboard item.
-    static func representations(for item: StashItem) -> [String: Any] {
+    static func representations(for item: TypoItem) -> [String: Any] {
         switch item.kind {
         case .text:
             return [UTType.utf8PlainText.identifier: item.text]
@@ -59,7 +59,7 @@ enum Clipboard {
     }
 
     #if canImport(AppKit) && !canImport(UIKit)
-    private static func pasteboardItem(for item: StashItem) -> NSPasteboardItem {
+    private static func pasteboardItem(for item: TypoItem) -> NSPasteboardItem {
         let pbItem = NSPasteboardItem()
         for (type, value) in representations(for: item) {
             let pbType = NSPasteboard.PasteboardType(type)
@@ -78,10 +78,10 @@ enum Clipboard {
 
 /// Writes item payloads to temporary files for Quick Look, drag out and sharing.
 enum TempFiles {
-    static func url(for item: StashItem) -> URL? {
+    static func url(for item: TypoItem) -> URL? {
         guard let data = item.payload else { return nil }
         let dir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("StashPreview", isDirectory: true)
+            .appendingPathComponent("TypoPreview", isDirectory: true)
             .appendingPathComponent(item.uuid.uuidString, isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let name = item.filename ?? Ingest.defaultFilename(for: item.utType ?? .data)

@@ -13,29 +13,24 @@ extension Color {
                      green: Double((value >> 8) & 0xFF) / 255,
                      blue: Double(value & 0xFF) / 255)
     }
-
-    /// Color → `#RRGGBB` (sRGB).
-    var hexString: String {
-        let resolved = self.resolve(in: EnvironmentValues())
-        let r = Int((max(0, min(1, resolved.red)) * 255).rounded())
-        let g = Int((max(0, min(1, resolved.green)) * 255).rounded())
-        let b = Int((max(0, min(1, resolved.blue)) * 255).rounded())
-        return String(format: "#%02X%02X%02X", r, g, b)
-    }
 }
 
-/// User-chosen category colours, shared with the keyboard through the App Group.
+/// Each category's hue. Users can pick any named hue in Settings; the choice is
+/// shared with the keyboard through the App Group.
 enum CategoryColours {
-    private static func key(_ kind: ItemKind) -> String { "categoryColour.\(kind.rawValue)" }
+    private static func key(_ kind: ItemKind) -> String { "categoryHue.\(kind.rawValue)" }
 
-    static func hex(for kind: ItemKind) -> String {
-        AppGroup.defaults.string(forKey: key(kind)) ?? kind.defaultColorHex
+    static func hueName(for kind: ItemKind) -> String {
+        AppGroup.defaults.string(forKey: key(kind)) ?? kind.defaultHueName
     }
 
-    static func color(for kind: ItemKind) -> Color { Color(hex: hex(for: kind)) }
+    static func hue(for kind: ItemKind) -> Hue { Hues.named(hueName(for: kind)) }
 
-    static func set(_ color: Color, for kind: ItemKind) {
-        AppGroup.defaults.set(color.hexString, forKey: key(kind))
+    /// Solid representative colour (icons, accessibility).
+    static func color(for kind: ItemKind) -> Color { hue(for: kind).base }
+
+    static func set(_ hueName: String, for kind: ItemKind) {
+        AppGroup.defaults.set(hueName, forKey: key(kind))
     }
 
     static func reset() {

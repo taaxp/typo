@@ -3,7 +3,7 @@ import SwiftUI
 import AppIntents
 
 @main
-struct StashWidgetBundle: WidgetBundle {
+struct TypoWidgetBundle: WidgetBundle {
     var body: some Widget {
         QuickSaveControl()
         QuickSaveLockScreenWidget()
@@ -13,30 +13,30 @@ struct StashWidgetBundle: WidgetBundle {
 /// Control Centre / Lock Screen control / Action button.
 struct QuickSaveControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "com.starconnect.stash.quicksave") {
+        StaticControlConfiguration(kind: "com.starconnect.typo.quicksave") {
             ControlWidgetButton(action: OpenQuickSaveIntent()) {
-                Label("Stash Quick Save", systemImage: "tray.and.arrow.down")
+                Label("Typo Quick Save", systemImage: "tray.and.arrow.down")
             }
         }
-        .displayName("Stash Quick Save")
-        .description("Save what's on your clipboard to Stash and tag it.")
+        .displayName("Typo Quick Save")
+        .description("Save what's on your clipboard to Typo and tag it.")
     }
 }
 
 /// Lock Screen accessory widget that opens Quick Save.
 struct QuickSaveLockScreenWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "com.starconnect.stash.lockscreen", provider: Provider()) { _ in
+        StaticConfiguration(kind: "com.starconnect.typo.lockscreen", provider: Provider()) { _ in
             ZStack {
                 AccessoryWidgetBackground()
                 Image(systemName: "tray.and.arrow.down").font(.title3)
             }
             .widgetURL(AppRoute.quickSave.url)
             .containerBackground(.clear, for: .widget)
-            .accessibilityLabel("Stash Quick Save")
+            .accessibilityLabel("Typo Quick Save")
         }
         .configurationDisplayName("Quick Save")
-        .description("Save your clipboard to Stash.")
+        .description("Save your clipboard to Typo.")
         .supportedFamilies([.accessoryCircular])
     }
 

@@ -2,7 +2,7 @@ import Foundation
 import UniformTypeIdentifiers
 import ImageIO
 
-/// A save that hasn't been turned into a `StashItem` yet. Produced by every input path
+/// A save that hasn't been turned into a `TypoItem` yet. Produced by every input path
 /// (share sheet, clipboard, drag and drop, Shortcuts, image URL) so classification
 /// lives in one place.
 struct IngestDraft: Sendable {
@@ -21,7 +21,7 @@ enum IngestError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .nothingUsable: "There was nothing Stash could save."
+        case .nothingUsable: "There was nothing Typo could save."
         case .notAnImage: "That link didn't return an image."
         case .tooLarge(let mb): "That file is over \(mb) MB."
         }
@@ -158,7 +158,7 @@ enum Ingest {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_AU_POSIX")
         formatter.dateFormat = "yyyy-MM-dd HH.mm.ss"
-        return "Stash \(formatter.string(from: Date())).\(type.preferredFilenameExtension ?? "dat")"
+        return "Typo \(formatter.string(from: Date())).\(type.preferredFilenameExtension ?? "dat")"
     }
 
     static func ensureExtension(_ name: String, _ type: UTType) -> String {

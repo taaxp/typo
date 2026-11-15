@@ -42,7 +42,7 @@ final class Dictation {
         state = .preparing
         do {
             guard await Self.requestMicrophone() else {
-                state = .failed("Allow microphone access for Stash in Settings to dictate.")
+                state = .failed("Allow microphone access for Typo in Settings to dictate.")
                 return
             }
             guard let locale = await SpeechTranscriber.supportedLocale(equivalentTo: Locale.current) else {
@@ -123,7 +123,7 @@ final class Dictation {
         let input = engine.inputNode
         let micFormat = input.outputFormat(forBus: 0)
         guard let converter = AVAudioConverter(from: micFormat, to: analyzerFormat) else {
-            throw NSError(domain: "Stash.Dictation", code: 1,
+            throw NSError(domain: "Typo.Dictation", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "Couldn't convert microphone audio."])
         }
         Self.installTap(on: input, format: micFormat, converter: converter, analyzerFormat: analyzerFormat, builder: builder)

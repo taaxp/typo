@@ -76,7 +76,7 @@ final class SyncMonitor {
         defer { isRepairing = false }
         await refreshAccountStatus()
         let now = Date()
-        for item in (try? context.fetch(FetchDescriptor<StashItem>())) ?? [] { item.modifiedAt = now }
+        for item in (try? context.fetch(FetchDescriptor<TypoItem>())) ?? [] { item.modifiedAt = now }
         for tag in (try? context.fetch(FetchDescriptor<Tag>())) ?? [] { tag.modifiedAt = now }
         do {
             try context.save()
