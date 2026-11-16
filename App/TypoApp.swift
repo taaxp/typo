@@ -83,6 +83,8 @@ final class AppModel {
         case .scan:
             #if os(iOS)
             scanning = true
+            #else
+            break   // no live scanner on Mac
             #endif
         default: self.route = route
         }

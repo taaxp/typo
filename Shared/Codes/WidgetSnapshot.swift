@@ -24,7 +24,11 @@ struct WidgetSnapshot: Codable, Sendable {
     }
 
     static func save(_ snapshot: WidgetSnapshot, png: Data) throws {
+        #if os(iOS)
         try png.write(to: imageURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        #else
+        try png.write(to: imageURL, options: .atomic)
+        #endif
         try JSONEncoder().encode(snapshot).write(to: metaURL, options: .atomic)
     }
 

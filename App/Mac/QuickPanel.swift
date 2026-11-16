@@ -105,7 +105,7 @@ struct QuickPanelView: View {
         let match: (String) -> Bool = { search.isEmpty || $0.localizedStandardContains(search) }
         let pinned = items.filter { $0.isPinned && match($0.searchableText) }
         let recent = items.filter { !$0.isPinned && match($0.searchableText) }.prefix(search.isEmpty ? 8 : 30)
-        var out: [(String, [Row])] = []
+        var out: [(section: String, rows: [Row])] = []
         if !pinned.isEmpty { out.append(("Pinned", pinned.map(Row.item))) }
         if !recent.isEmpty { out.append((search.isEmpty ? "Recent" : "Library", recent.map(Row.item))) }
         if history.isRunning {

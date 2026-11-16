@@ -29,9 +29,7 @@ enum LibraryFilter: Hashable {
         case .recents: [Hues.named("Ocean"), Hues.named("Dusk"), Hues.named("Lagoon")]
         case .all: [Hues.named("Mist"), Hues.named("Dusk"), Hues.named("Sage")]
         case .pinned: [Hues.named("Amber"), Hues.named("Coral"), Hues.named("Honey")]
-        case .kind(let kind):
-            let hue = CategoryColours.hue(for: kind)
-            return [hue, Hues.named("Mist"), hue]
+        case .kind(let kind): [CategoryColours.hue(for: kind), Hues.named("Mist"), CategoryColours.hue(for: kind)]
         case .tag(let tag): [tag.hue, Hues.named("Mist"), tag.hue]
         case .collection(let c): [c.hue, Hues.named("Mist"), c.hue]
         case .codes: [Hues.named("Lagoon"), Hues.named("Mist"), Hues.named("Amber")]

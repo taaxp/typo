@@ -252,7 +252,8 @@ enum QRPayload {
             return .sms(number: parts.first ?? "", body: parts.count > 1 ? parts[1] : "")
         }
         if upper.hasPrefix("GEO:") {
-            let coords = trimmed.dropFirst(4).split(separator: "?")[0].split(separator: ",").compactMap { Double($0) }
+            let coords = trimmed.dropFirst(4).split(separator: "?").first
+                .map { $0.split(separator: ",").compactMap { Double($0) } } ?? []
             if coords.count >= 2 { return .location(latitude: coords[0], longitude: coords[1]) }
         }
         if let url = Ingest.singleWebURL(in: trimmed) { return .link(url) }

@@ -350,8 +350,10 @@ struct CollectionCover: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: height * 0.16, style: .continuous)
+        // Decode first: an item can have thumbnail bytes that fail to decode.
+        let images = items.compactMap { $0.thumbnail.flatMap(PlatformImage.from) }
         ZStack {
-            if items.isEmpty {
+            if images.isEmpty {
                 shape.fill(collection.hue.gradient)
                     .overlay(shape.fill(LinearGradient(colors: [.white.opacity(0.3), .clear], startPoint: .top, endPoint: .center)))
                 Group {
@@ -359,7 +361,7 @@ struct CollectionCover: View {
                     else { Image(systemName: collection.icon).font(.system(size: height * 0.3, weight: .semibold)).foregroundStyle(.white) }
                 }
             } else {
-                mosaic.clipShape(shape)
+                mosaic(images).clipShape(shape)
             }
         }
         .frame(height: height)
@@ -370,8 +372,7 @@ struct CollectionCover: View {
     }
 
     @ViewBuilder
-    private var mosaic: some View {
-        let images = items.compactMap { $0.thumbnail.flatMap(PlatformImage.from) }
+    private func mosaic(_ images: [Image]) -> some View {
         switch images.count {
         case 1:
             images[0].resizable().scaledToFill()
