@@ -89,6 +89,13 @@ struct CodesView: View {
             library.setOnWidget(item, !item.showOnWidget)
             model.show(item.showOnWidget ? "On your widget" : "Removed from widget")
         }
+        Button(item.showOnWatch ? "Remove from Apple Watch" : "Show on Apple Watch", systemImage: "applewatch") {
+            item.showOnWatch.toggle()
+            item.modifiedAt = .now
+            try? context.save()
+            TypoLibrary.notifyChanged()
+            model.show(item.showOnWatch ? "Sending to your Apple Watch" : "Removed from Apple Watch")
+        }
         #endif
         Divider()
         Button("Delete", systemImage: "trash", role: .destructive) { library.delete(item) }
@@ -120,6 +127,7 @@ private struct CodeTile: View {
                 if item.isPinned { Image(systemName: "pin.fill").font(.caption2).foregroundStyle(Hues.named("Amber").gradient) }
                 Text(item.title).font(.subheadline.weight(.semibold)).lineLimit(1)
                 Spacer(minLength: 0)
+                if item.showOnWatch { Image(systemName: "applewatch").font(.caption2).foregroundStyle(.secondary) }
                 if item.showOnWidget { Image(systemName: "square.grid.2x2.fill").font(.caption2).foregroundStyle(.secondary) }
             }
             HueChip(title: item.isMemberCard ? (Symbology(rawValue: item.symbologyRaw)?.title ?? "Card") : draft.type.title,

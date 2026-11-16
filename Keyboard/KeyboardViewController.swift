@@ -55,6 +55,7 @@ final class KeyboardViewController: UIInputViewController {
         if container == nil, hasFullAccess {
             container = try? TypoStore.makeContainer(role: .readOnly)
         }
+        if let container { actions.loadExpansions(from: container) }
         let root = KeyboardRootView(actions: actions, libraryAvailable: container != nil)
         if let container {
             host?.rootView = AnyView(root.modelContainer(container).id(UUID()))
@@ -66,6 +67,7 @@ final class KeyboardViewController: UIInputViewController {
     override func textDidChange(_ textInput: UITextInput?) {
         super.textDidChange(textInput)
         actions.returnKeyType = textDocumentProxy.returnKeyType ?? .default
+        actions.refreshSuggestions()
     }
 }
 
@@ -81,11 +83,122 @@ final class KeyboardActions {
     var banner: String?
     var isPolishing = false
 
+    /// Text expansion: shortcut (without ";") → snippet.
+    struct Expansion { let title: String; let text: String }
+    private(set) var expansions: [String: Expansion] = [:]
+    /// Matching shortcuts while ";ad…" is being typed.
+    private(set) var suggestions: [String] = []
+    private var typedShortcut = ""
+
+    /// A template being filled in inside the keyboard. While set, the Typo keys
+    /// type into the active field instead of the app.
+    struct TemplateFill {
+        let title: String
+        let source: String
+        let fields: [TemplateField]
+        var values: [String: String] = [:]
+        var active = 0
+        var trailing = ""
+    }
+    var fill: TemplateFill?
+
     private var proxy: UITextDocumentProxy? { controller?.textDocumentProxy }
 
-    func insert(_ text: String) { proxy?.insertText(text) }
-    func deleteBackward() { proxy?.deleteBackward() }
+    func insert(_ text: String) {
+        if var current = fill {
+            if text == "\n" {
+                current.active = min(current.active + 1, current.fields.count - 1)
+            } else {
+                let key = current.fields[current.active].id
+                current.values[key, default: ""] += text
+            }
+            fill = current
+            return
+        }
+        proxy?.insertText(text)
+        expandIfNeeded()
+        refreshSuggestions()
+    }
+
+    func deleteBackward() {
+        if var current = fill {
+            let key = current.fields[current.active].id
+            if var value = current.values[key], !value.isEmpty { value.removeLast(); current.values[key] = value }
+            fill = current
+            return
+        }
+        proxy?.deleteBackward()
+        refreshSuggestions()
+    }
+
     func nextKeyboard() { controller?.advanceToNextInputMode() }
+
+    // MARK: Text expansion
+
+    func loadExpansions(from container: ModelContainer) {
+        let context = ModelContext(container)
+        let items = (try? context.fetch(FetchDescriptor<TypoItem>(predicate: #Predicate { $0.shortcut != "" }))) ?? []
+        expansions = Dictionary(items.map { ($0.shortcut.lowercased(), Expansion(title: $0.displayTitle, text: $0.text)) },
+                                uniquingKeysWith: { first, _ in first })
+    }
+
+    /// After typing ";addr" and a space or punctuation, replace it with the snippet.
+    private func expandIfNeeded() {
+        guard !expansions.isEmpty, let before = proxy?.documentContextBeforeInput,
+              let match = TextExpander.match(contextBefore: before, shortcuts: Set(expansions.keys)),
+              let expansion = expansions[match.shortcut] else { return }
+        for _ in 0..<match.deleteCount { proxy?.deleteBackward() }
+        expand(expansion, trailing: match.delimiter == "\n" ? "\n" : String(match.delimiter))
+    }
+
+    func refreshSuggestions() {
+        guard fill == nil, !expansions.isEmpty,
+              let result = TextExpander.suggestions(contextBefore: proxy?.documentContextBeforeInput ?? "",
+                                                    shortcuts: Array(expansions.keys)) else {
+            suggestions = []
+            typedShortcut = ""
+            return
+        }
+        typedShortcut = result.typed
+        suggestions = result.matches
+    }
+
+    /// Tapping a suggestion chip.
+    func expandSuggestion(_ shortcut: String) {
+        guard let expansion = expansions[shortcut] else { return }
+        for _ in 0..<(typedShortcut.count + 1) { proxy?.deleteBackward() }
+        suggestions = []
+        expand(expansion, trailing: "")
+    }
+
+    private func expand(_ expansion: Expansion, trailing: String) {
+        let fields = Template.fields(in: expansion.text)
+        if fields.isEmpty {
+            insertRendered(Template.render(expansion.text), trailing: trailing)
+        } else {
+            fill = TemplateFill(title: expansion.title, source: expansion.text, fields: fields, trailing: trailing)
+        }
+        UIDevice.current.playInputClick()
+    }
+
+    // MARK: Templates
+
+    /// Inserts rendered text and moves the cursor to {cursor}, if the template has one.
+    private func insertRendered(_ rendered: Template.Rendered, trailing: String) {
+        proxy?.insertText(rendered.text + trailing)
+        let offset = rendered.cursorOffsetFromEnd + (rendered.cursorOffsetFromEnd > 0 ? trailing.count : 0)
+        if offset > 0 { proxy?.adjustTextPosition(byCharacterOffset: -offset) }
+    }
+
+    func finishFill() {
+        guard let current = fill else { return }
+        fill = nil
+        insertRendered(Template.render(current.source, values: current.values), trailing: current.trailing)
+    }
+
+    func cancelFill() { fill = nil }
+
+    func activateField(_ index: Int) { fill?.active = index }
 
     func show(_ message: String) {
         banner = message
@@ -98,8 +211,12 @@ final class KeyboardActions {
     /// Text and links are typed straight in. Everything else goes on the clipboard.
     func use(_ item: TypoItem) {
         if item.kind.isInsertableAsText {
-            insert(item.text)
-            UIDevice.current.playInputClick()
+            if item.isTemplate {
+                expand(Expansion(title: item.displayTitle, text: item.text), trailing: "")
+            } else {
+                proxy?.insertText(item.text)
+                UIDevice.current.playInputClick()
+            }
         } else {
             copy(item)
         }

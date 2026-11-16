@@ -14,24 +14,18 @@ enum AppGroup {
         Bundle.main.object(forInfoDictionaryKey: "TypoCloudKitContainer") as? String
         ?? "iCloud.com.starconnect.typo"
 
-    /// Shared defaults. On iOS this is the App Group suite so the keyboard, share
-    /// extension and widgets see the same settings. The Mac app has no extensions,
-    /// so it uses its own defaults.
+    /// Shared defaults: the App Group suite, so each app and its extensions
+    /// (keyboard, share, widgets, complications) see the same settings.
     static var defaults: UserDefaults {
-        #if os(iOS)
-        return UserDefaults(suiteName: id) ?? .standard
-        #else
-        return .standard
-        #endif
+        UserDefaults(suiteName: id) ?? .standard
     }
 
-    /// Root of the shared container (iOS), or Application Support (macOS).
+    /// Root of the App Group container, or Application Support if the group
+    /// isn't available (e.g. unsigned development builds).
     static var containerURL: URL {
-        #if os(iOS)
         if let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id) {
             return url
         }
-        #endif
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Typo", isDirectory: true)
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)

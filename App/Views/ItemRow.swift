@@ -19,6 +19,17 @@ struct ItemRow: View {
                             .accessibilityLabel("Pinned")
                     }
                     Text(item.displayTitle).font(.body.weight(.semibold)).lineLimit(1)
+                    if item.isTemplate {
+                        Image(systemName: "curlybraces").font(.caption2.weight(.bold))
+                            .foregroundStyle(Hues.named("Dusk").gradient)
+                            .accessibilityLabel("Template")
+                    }
+                    if !item.shortcut.isEmpty {
+                        Text(";" + item.shortcut).font(.caption2.monospaced().weight(.semibold))
+                            .padding(.horizontal, 5).padding(.vertical, 1)
+                            .background(.thinMaterial, in: Capsule())
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 if let subtitle {
                     Text(subtitle).font(.footnote).foregroundStyle(.secondary).lineLimit(2)

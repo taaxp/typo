@@ -1,4 +1,5 @@
 import AppIntents
+import CoreSpotlight
 import Foundation
 import SwiftData
 
@@ -20,13 +21,22 @@ struct ShowCodeIntent: AppIntent {
     }
 }
 
-struct CodeEntity: AppEntity {
+struct CodeEntity: IndexedEntity {
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "Code"
     static let defaultQuery = CodeQuery()
 
     var id: UUID
     var title: String
     var isMember: Bool
+
+    /// Only the name and type are indexed: never the content or a Wi-Fi password.
+    var attributeSet: CSSearchableItemAttributeSet {
+        let attributes = CSSearchableItemAttributeSet()
+        attributes.contentDescription = isMember ? "Member card" : "QR code"
+        return attributes
+    }
+
+    var hideInSpotlight: Bool { !SpotlightSettings.isEnabled }
 
     var displayRepresentation: DisplayRepresentation {
         DisplayRepresentation(title: "\(title)",
@@ -35,7 +45,7 @@ struct CodeEntity: AppEntity {
     }
 }
 
-struct CodeQuery: EntityStringQuery {
+struct CodeQuery: EntityStringQuery, IndexedEntityQuery {
     @MainActor
     private func all() throws -> [CodeEntity] {
         let context = try SharedContainer.app().mainContext
@@ -55,4 +65,12 @@ struct CodeQuery: EntityStringQuery {
 
     @MainActor
     func suggestedEntities() async throws -> [CodeEntity] { try all() }
+
+    func reindexEntities(for identifiers: [UUID], indexDescription: CSSearchableIndexDescription) async throws {
+        try await SpotlightIndex.index.indexAppEntities(try await entities(for: identifiers))
+    }
+
+    func reindexAllEntities(indexDescription: CSSearchableIndexDescription) async throws {
+        try await SpotlightIndex.reindexAll()
+    }
 }

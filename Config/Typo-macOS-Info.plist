@@ -38,7 +38,7 @@
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Typo transcribes your dictation on this Mac.</string>
 	<key>TypoAppGroupID</key>
-	<string>$(APP_GROUP_ID)</string>
+	<string>$(TeamIdentifierPrefix)$(MAC_APP_GROUP_ID)</string>
 	<key>TypoCloudKitContainer</key>
 	<string>$(ICLOUD_CONTAINER)</string>
 	<key>TypoKeychainGroup</key>

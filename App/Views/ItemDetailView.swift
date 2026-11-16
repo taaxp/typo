@@ -24,6 +24,23 @@ struct ItemDetailView: View {
             case .text:
                 Section("Text") {
                     TextEditor(text: $item.text).frame(minHeight: 140)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 6) {
+                            ForEach(Template.helpChips, id: \.label) { chip in
+                                Button { item.text += chip.insert } label: {
+                                    Text(chip.insert).font(.caption.monospaced().weight(.semibold))
+                                        .padding(.horizontal, 9).padding(.vertical, 5)
+                                }
+                                .buttonStyle(.glass)
+                                .accessibilityLabel("Insert \(chip.label)")
+                            }
+                        }
+                    }
+                    if item.isTemplate {
+                        LabeledContent("Preview") {
+                            Text(Template.render(item.text).text).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
+                        }
+                    }
                     if TextPolisher.isAvailable {
                         Menu {
                             ForEach(PolishStyle.allCases) { style in
@@ -51,6 +68,30 @@ struct ItemDetailView: View {
                     LabeledContent("Name", value: item.filename ?? "—")
                     LabeledContent("Type", value: item.utType?.localizedDescription ?? "Unknown")
                     Button("Quick Look", systemImage: "eye") { previewURL = TempFiles.url(for: item) }
+                }
+            }
+
+            if item.kind == .text || item.kind == .link {
+                Section {
+                    HStack(spacing: 2) {
+                        Text(";").font(.body.monospaced().weight(.bold)).foregroundStyle(Hues.named("Dusk").inkColor)
+                        TextField("shortcut, e.g. addr", text: Binding(
+                            get: { item.shortcut },
+                            set: { item.shortcut = TextExpander.normalise($0) }))
+                            .font(.body.monospaced())
+                            .autocorrectionDisabled()
+                            #if os(iOS)
+                            .textInputAutocapitalization(.never)
+                            #endif
+                    }
+                    if let clash = shortcutClash {
+                        Label("“;\(item.shortcut)” is already used by \(clash).", systemImage: "exclamationmark.triangle")
+                            .font(.footnote).foregroundStyle(Hues.named("Coral").inkColor)
+                    }
+                } header: {
+                    Text("Text expansion")
+                } footer: {
+                    Text("Type ;\(item.shortcut.isEmpty ? "shortcut" : item.shortcut) and a space with the Typo keyboard to insert this. In templates, {Name} becomes a field you fill in, and {date}, {time} and {cursor} fill themselves.")
                 }
             }
 
@@ -127,6 +168,14 @@ struct ItemDetailView: View {
             }
         }
         .quickLookPreview($previewURL)
+    }
+
+    /// Another item using the same shortcut, if any.
+    private var shortcutClash: String? {
+        guard !item.shortcut.isEmpty else { return nil }
+        let wanted = item.shortcut
+        let others = (try? context.fetch(FetchDescriptor<TypoItem>(predicate: #Predicate { $0.shortcut == wanted }))) ?? []
+        return others.first { $0.persistentModelID != item.persistentModelID }?.displayTitle
     }
 
     private func polish(_ style: PolishStyle) async {

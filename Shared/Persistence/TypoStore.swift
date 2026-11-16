@@ -17,8 +17,9 @@ enum TypoStore {
     static let schema = Schema([TypoItem.self, Tag.self, TypoCollection.self, CodeItem.self])
 
     static func makeContainer(role: Role) throws -> ModelContainer {
+        // Same layout on iPhone, iPad and Mac: the store lives in the App Group so
+        // the keyboard and share extensions (iOS and Mac) can read it.
         let config: ModelConfiguration
-        #if os(iOS)
         switch role {
         case .app:
             config = ModelConfiguration(
@@ -36,13 +37,6 @@ enum TypoStore {
                 cloudKitDatabase: .none
             )
         }
-        #else
-        config = ModelConfiguration(
-            "Typo",
-            schema: schema,
-            cloudKitDatabase: .private(AppGroup.cloudKitContainer)
-        )
-        #endif
         return try ModelContainer(for: schema, configurations: [config])
     }
 

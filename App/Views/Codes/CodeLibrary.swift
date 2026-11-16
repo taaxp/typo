@@ -42,6 +42,7 @@ struct CodeLibrary {
         if existing == nil { context.insert(item) }
         try context.save()
         TypoShortcuts.updateAppShortcutParameters()   // "Show my <code>" phrases
+        TypoLibrary.notifyChanged()                   // Spotlight and Apple Watch
         if item.showOnWidget { refreshWidget(with: item) }
         return item
     }
@@ -52,6 +53,7 @@ struct CodeLibrary {
         context.delete(item)
         try? context.save()
         TypoShortcuts.updateAppShortcutParameters()
+        TypoLibrary.notifyChanged()
     }
 
     /// Only one code is on the widget at a time.

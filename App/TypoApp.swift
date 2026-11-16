@@ -64,12 +64,21 @@ final class AppModel {
     var filter: LibraryFilter? = .recents
     var scanning = false
     var presentingCode: CodeDraft?
+    /// A template waiting for its fields to be filled in before copying.
+    var fillingTemplate: TypoItem?
+    /// An item opened from Spotlight or Siri.
+    var focusedItem: TypoItem?
     var toast: String?
 
     let sync = SyncMonitor()
     let assistant = SaveAssistant()
     let vaultLock = VaultLock()
     let vault = VaultStore()
+    let spotlight = SpotlightSync()
+    let hueSync = HueSync()
+    #if os(iOS)
+    let watch = WatchSync()
+    #endif
     #if os(macOS)
     let mac = MacController()
     #endif
@@ -88,6 +97,20 @@ final class AppModel {
             #endif
         default: self.route = route
         }
+    }
+
+    /// Templates with fields open the fill-in sheet instead of copying straight away.
+    /// Returns true when it took over the copy.
+    func interceptTemplateCopy(_ items: [TypoItem]) -> Bool {
+        guard items.count == 1, let item = items.first, item.isTemplate else { return false }
+        #if os(macOS)
+        let fields = Template.fields(in: item.text, clipboardReadable: true)
+        #else
+        let fields = Template.fields(in: item.text)
+        #endif
+        guard !fields.isEmpty else { return false }
+        fillingTemplate = item
+        return true
     }
 
     func show(_ message: String) {
@@ -128,6 +151,18 @@ struct RootView: View {
                 .frame(minWidth: 480, minHeight: 520)
                 #endif
             }
+            .sheet(item: $model.focusedItem) { item in
+                NavigationStack { ItemDetailView(item: item) }
+                #if os(macOS)
+                .frame(minWidth: 480, minHeight: 560)
+                #endif
+            }
+            .sheet(item: $model.fillingTemplate) { item in
+                NavigationStack { FillTemplateView(item: item) }
+                #if os(macOS)
+                .frame(minWidth: 460, minHeight: 420)
+                #endif
+            }
             #if os(iOS)
             .fullScreenCover(isPresented: $model.scanning) { ScanView() }
             .fullScreenCover(item: $model.presentingCode) { PresentCodeView(draft: $0) }
@@ -136,6 +171,11 @@ struct RootView: View {
             #endif
             .task {
                 model.assistant.start(container: context.container)
+                model.spotlight.start(container: context.container)
+                model.hueSync.start()
+                #if os(iOS)
+                model.watch.start(container: context.container)
+                #endif
                 #if os(macOS)
                 model.mac.start(container: context.container, model: model)
                 #endif
@@ -146,6 +186,9 @@ struct RootView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: .typoInboxChanged)) { _ in
                 Task { await refresh() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .typoPendingOpen)) { _ in
+                handlePendingOpen()
             }
             .onAppear { InboxObserver.start() }
     }
@@ -190,12 +233,36 @@ struct RootView: View {
             AppGroup.defaults.removeObject(forKey: AppGroup.Key.pendingRoute)
             model.open(AppRoute(rawValue: raw))
         }
+        handlePendingOpen()
         if let raw = AppGroup.defaults.string(forKey: AppGroup.Key.pendingCodeID), let id = UUID(uuidString: raw) {
             AppGroup.defaults.removeObject(forKey: AppGroup.Key.pendingCodeID)
             let codes = (try? context.fetch(FetchDescriptor<CodeItem>(predicate: #Predicate { $0.uuid == id }))) ?? []
             if let code = codes.first { model.presentingCode = CodeLibrary(context: context).draft(for: code) }
         }
         await library.fetchMissingLinkTitles()
+    }
+}
+
+extension RootView {
+    /// Opens an item or collection requested by Spotlight, Siri or Shortcuts.
+    func handlePendingOpen() {
+        guard let raw = AppGroup.defaults.string(forKey: PendingOpen.key) else {
+            if AppGroup.defaults.string(forKey: AppGroup.Key.pendingCodeID) != nil { Task { await refresh() } }
+            return
+        }
+        AppGroup.defaults.removeObject(forKey: PendingOpen.key)
+        let parts = raw.split(separator: ":", maxSplits: 1).map(String.init)
+        guard parts.count == 2, let id = UUID(uuidString: parts[1]) else { return }
+        switch parts[0] {
+        case "item":
+            let items = (try? context.fetch(FetchDescriptor<TypoItem>(predicate: #Predicate { $0.uuid == id }))) ?? []
+            model.focusedItem = items.first
+        case "collection":
+            let collections = (try? context.fetch(FetchDescriptor<TypoCollection>(predicate: #Predicate { $0.uuid == id }))) ?? []
+            if let c = collections.first { model.filter = .collection(c) }
+        default:
+            break
+        }
     }
 }
 

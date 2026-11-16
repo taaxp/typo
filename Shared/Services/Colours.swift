@@ -1,20 +1,5 @@
 import SwiftUI
 
-extension Color {
-    /// `#RRGGBB` → Color. Falls back to grey for bad input.
-    init(hex: String) {
-        let cleaned = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#")).uppercased()
-        var value: UInt64 = 0
-        guard cleaned.count == 6, Scanner(string: cleaned).scanHexInt64(&value) else {
-            self = .gray
-            return
-        }
-        self = Color(red: Double((value >> 16) & 0xFF) / 255,
-                     green: Double((value >> 8) & 0xFF) / 255,
-                     blue: Double(value & 0xFF) / 255)
-    }
-}
-
 /// Each category's hue. Users can pick any named hue in Settings; the choice is
 /// shared with the keyboard through the App Group.
 enum CategoryColours {

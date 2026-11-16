@@ -64,7 +64,9 @@ enum Clipboard {
     static func representations(for item: TypoItem) -> [String: Any] {
         switch item.kind {
         case .text:
-            return [UTType.utf8PlainText.identifier: item.text]
+            // Templates copy rendered: dates and times filled in, fields at their defaults.
+            let text = item.isTemplate ? Template.render(item.text, clipboard: nil).text : item.text
+            return [UTType.utf8PlainText.identifier: text]
         case .link:
             var reps: [String: Any] = [UTType.utf8PlainText.identifier: item.text]
             if let url = item.url { reps[UTType.url.identifier] = url }

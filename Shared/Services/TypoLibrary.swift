@@ -8,6 +8,8 @@ import LinkPresentation
 
 extension Notification.Name {
     static let typoItemSaved = Notification.Name("TypoItemSaved")
+    /// Edits, deletes, pins and collection changes (Spotlight, Apple Watch).
+    static let typoLibraryChanged = Notification.Name("TypoLibraryChanged")
 }
 
 /// All writes to the library go through here so every input path behaves the same.
@@ -185,16 +187,23 @@ struct TypoLibrary {
         item.hasCustomTitle = !item.title.isEmpty
         item.touch()
         try? context.save()
+        Self.notifyChanged()
     }
 
     func togglePin(_ item: TypoItem) {
         item.isPinned.toggle()
         item.touch()
         try? context.save()
+        Self.notifyChanged()
     }
 
     func delete(_ items: [TypoItem]) {
         items.forEach(context.delete)
         try? context.save()
+        Self.notifyChanged()
+    }
+
+    static func notifyChanged() {
+        NotificationCenter.default.post(name: .typoLibraryChanged, object: nil)
     }
 }

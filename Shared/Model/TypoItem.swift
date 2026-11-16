@@ -93,6 +93,9 @@ final class TypoItem {
     @Relationship(deleteRule: .nullify, inverse: \Tag.items)
     var tags: [Tag]? = []
 
+    /// Text-expansion abbreviation without the trigger, e.g. "addr" for ";addr".
+    var shortcut: String = ""
+
     /// Collections this item belongs to (an item can be in several).
     var collections: [TypoCollection]? = []
 
@@ -143,10 +146,14 @@ final class TypoItem {
 
     /// Lower-cased haystack for search.
     var searchableText: String {
-        ([title, text, filename ?? "", recognisedText, summary] + (tags ?? []).map(\.name)).joined(separator: " ")
+        ([title, text, filename ?? "", recognisedText, summary, shortcut.isEmpty ? "" : ";" + shortcut]
+         + (tags ?? []).map(\.name)).joined(separator: " ")
     }
 
     func touch() { modifiedAt = Date() }
+
+    /// True when the text contains placeholders such as {date} or {Name}.
+    var isTemplate: Bool { (kind == .text || kind == .link) && Template.isTemplate(text) }
 
     var suggestedTags: [String] {
         suggestedTagNames.split(separator: "\n").map(String.init).filter { !$0.isEmpty }

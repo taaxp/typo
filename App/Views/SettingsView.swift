@@ -6,6 +6,11 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Tag.name) private var tags: [Tag]
+    @Query(filter: #Predicate<TypoItem> { $0.shortcut != "" }, sort: \TypoItem.shortcut) private var shortcuts: [TypoItem]
+    @AppStorage(SpotlightSettings.key, store: AppGroup.defaults) private var spotlightOn = true
+    #if os(iOS)
+    @AppStorage(WatchSync.snippetsKey, store: AppGroup.defaults) private var watchSnippets = true
+    #endif
     @AppStorage(AppGroup.Key.recentsAgeOutDays, store: AppGroup.defaults) private var ageOutDays = 3
     @State private var hueRevision = 0
     @AppStorage(SaveAssistant.autoApplyKey, store: AppGroup.defaults) private var autoApplySuggestions = false
@@ -17,7 +22,7 @@ struct SettingsView: View {
                     NavigationLink {
                         HueChooser(title: kind.title, selection: Binding(
                             get: { _ = hueRevision; return CategoryColours.hueName(for: kind) },
-                            set: { CategoryColours.set($0, for: kind); hueRevision += 1 }))
+                            set: { CategoryColours.set($0, for: kind); model.hueSync.push(); hueRevision += 1 }))
                     } label: {
                         HStack(spacing: 12) {
                             HueTile(hue: CategoryColours.hue(for: kind), symbol: kind.symbol, size: 30)
@@ -28,7 +33,7 @@ struct SettingsView: View {
                     }
                     .id("\(kind.rawValue)-\(hueRevision)")
                 }
-                Button("Reset to Defaults") { CategoryColours.reset(); hueRevision += 1 }
+                Button("Reset to Defaults") { CategoryColours.reset(); model.hueSync.push(); hueRevision += 1 }
             } header: {
                 Text("Categories")
             }
@@ -81,6 +86,45 @@ struct SettingsView: View {
                     .font(.callout)
             } header: {
                 Text("Control Centre, Lock Screen and Action button")
+            }
+            #endif
+
+            Section {
+                if shortcuts.isEmpty {
+                    Text("No shortcuts yet. Open a snippet and give it a shortcut, such as ;addr.").foregroundStyle(.secondary)
+                }
+                ForEach(shortcuts) { item in
+                    HStack {
+                        Text(";" + item.shortcut).font(.body.monospaced().weight(.semibold))
+                        Spacer()
+                        Text(item.displayTitle).foregroundStyle(.secondary).lineLimit(1)
+                        if item.isTemplate { Image(systemName: "curlybraces").foregroundStyle(Hues.named("Dusk").gradient) }
+                    }
+                }
+            } header: {
+                Text("Text expansion")
+            } footer: {
+                Text("Type a shortcut and a space with the Typo keyboard to insert the snippet. Templates can include {date}, {time}, {cursor} and fill-in fields such as {Name}. iOS doesn't let apps add to the system Text Replacements, so expansion works in the Typo keyboard only.")
+            }
+
+            Section {
+                Toggle("Show Typo in Spotlight", isOn: $spotlightOn)
+                    .onChange(of: spotlightOn) { _, _ in model.spotlight.rebuild() }
+                Button("Rebuild Search Index") { model.spotlight.rebuild(); model.show("Rebuilding search index") }
+            } header: {
+                Text("Spotlight and Siri")
+            } footer: {
+                Text("Snippets, links, files, collections and code names appear in system search, and Siri can copy them (\"Copy my address from Typo\"). Bank cards, Wi-Fi passwords and clipboard history are never indexed.")
+            }
+
+            #if os(iOS)
+            Section {
+                Toggle("Send pinned snippets", isOn: $watchSnippets)
+                    .onChange(of: watchSnippets) { _, _ in model.watch.schedule() }
+                Text("To put a member card or guest Wi-Fi code on your watch, open Codes, touch and hold the code, and choose Show on Apple Watch.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            } header: {
+                Text("Apple Watch")
             }
             #endif
 

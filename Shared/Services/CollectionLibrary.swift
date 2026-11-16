@@ -37,6 +37,7 @@ struct CollectionLibrary {
         collection.orderedItemIDs = order.joined(separator: "\n")
         collection.modifiedAt = .now
         try? context.save()
+        TypoLibrary.notifyChanged()
     }
 
     func remove(_ items: [TypoItem], from collection: TypoCollection) {
@@ -104,6 +105,7 @@ struct CollectionLibrary {
         // Items stay in the library; only the folder goes.
         context.delete(collection)
         try? context.save()
+        TypoLibrary.notifyChanged()
     }
 
     private func ids(_ collection: TypoCollection) -> [String] {

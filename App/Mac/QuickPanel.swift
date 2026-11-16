@@ -89,6 +89,8 @@ struct QuickPanelView: View {
     @State private var search = ""
     @State private var selected = 0
     @FocusState private var searchFocused: Bool
+    @State private var filling: TypoItem?
+    @State private var fieldValues: [String: String] = [:]
 
     private enum Row: Identifiable {
         case item(TypoItem)
@@ -118,6 +120,43 @@ struct QuickPanelView: View {
     private var flat: [Row] { rows.flatMap(\.rows) }
 
     var body: some View {
+        if let filling { templateForm(filling) } else { searchPanel }
+    }
+
+    /// Inline fields for a template before it's copied.
+    private func templateForm(_ item: TypoItem) -> some View {
+        let fields = Template.fields(in: item.text, clipboardReadable: true)
+        let rendered = Template.render(item.text, values: fieldValues, clipboard: NSPasteboard.general.string(forType: .string))
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label(item.displayTitle, systemImage: "curlybraces").font(.headline)
+                Spacer()
+                Button("Back") { filling = nil }.buttonStyle(.glass)
+            }
+            ForEach(fields) { field in
+                TextField(field.defaultValue.isEmpty ? field.name : "\(field.name) (\(field.defaultValue))",
+                          text: Binding(get: { fieldValues[field.id] ?? "" }, set: { fieldValues[field.id] = $0 }))
+                    .textFieldStyle(.roundedBorder)
+            }
+            Text(rendered.text).font(.callout).foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(Hues.named("Dusk").softGradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            Button("Copy", systemImage: "doc.on.doc") {
+                Clipboard.copy(text: rendered.text)
+                history.ignoreCurrentChange()
+                filling = nil
+                close()
+            }
+            .buttonStyle(.glass)
+            .keyboardShortcut(.defaultAction)
+        }
+        .padding(18)
+        .frame(minWidth: 520, minHeight: 360, alignment: .top)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+
+    private var searchPanel: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
@@ -203,6 +242,11 @@ struct QuickPanelView: View {
         guard flat.indices.contains(index) else { return }
         switch flat[index] {
         case .item(let item):
+            if item.isTemplate, !Template.fields(in: item.text, clipboardReadable: true).isEmpty {
+                fieldValues = [:]
+                filling = item
+                return
+            }
             Clipboard.copy([item])
             history.ignoreCurrentChange()
         case .history(let entry): history.copy(entry)

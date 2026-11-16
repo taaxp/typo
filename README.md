@@ -26,9 +26,17 @@ These are **design mockups**, not simulator screenshots. They are drawn in HTML 
 |---|---|---|
 | ![Guest Wi-Fi](docs/screenshots/wifi.png) | ![Scan](docs/screenshots/scan.png) | ![Vault](docs/screenshots/vault.png) |
 
-| Member card | | |
+| Member card | Template fill-in | Text expansion |
 |---|---|---|
-| ![Member card](docs/screenshots/member.png) | | |
+| ![Member card](docs/screenshots/member.png) | ![Template](docs/screenshots/template.png) | ![Expansion](docs/screenshots/expand.png) |
+
+| Fill a template in the keyboard | Spotlight and Siri | |
+|---|---|---|
+| ![Fill panel](docs/screenshots/fill.png) | ![Spotlight](docs/screenshots/spotlight.png) | |
+
+![Apple Watch](docs/screenshots/watch.png)
+
+![Mac share extension](docs/screenshots/macshare.png)
 
 ![Mac quick panel and AI suggestions](docs/screenshots/quickpanel.png)
 
@@ -103,9 +111,13 @@ cd Typo && xcodegen generate && open Typo.xcodeproj
 
 Before you build for the first time:
 
-1. In `project.yml`, set `BUNDLE_ID_PREFIX`, `APP_GROUP_ID` and `ICLOUD_CONTAINER` to IDs you own, and set `DEVELOPMENT_TEAM`. Run `xcodegen generate` again after any edit.
-2. In the Apple Developer portal (or let Xcode do it), create the App Group and the iCloud container, then enable them for the app and all three extensions. Push notifications must be on for the app, because CloudKit uses silent pushes.
-3. Build the `Typo` scheme for iPhone/iPad and the `TypoMac` scheme for Mac.
+1. In `project.yml`, set `BUNDLE_ID_PREFIX`, `APP_GROUP_ID`, `MAC_APP_GROUP_ID` and `ICLOUD_CONTAINER` to IDs you own, and set `DEVELOPMENT_TEAM`. Run `xcodegen generate` again after any edit.
+2. In the Apple Developer portal (or let Xcode do it), create the App Group and the iCloud container, then enable them for the app and all its extensions:
+   - **iOS:** keyboard, share, widgets.
+   - **watchOS:** watch app, complications.
+   - **Mac:** the Mac app group is prefixed with your Team ID, and it covers the Mac app and the Mac share extension.
+   - **Also enable:** push notifications (CloudKit uses silent pushes), iCloud key-value storage (category hue sync), and keychain sharing (vault and Wi-Fi passwords).
+3. Build the `Typo` scheme for iPhone/iPad (it embeds the Apple Watch app) and the `TypoMac` scheme for Mac (it embeds the Mac share extension). After generating, check that `TypoWatch` appears under the iOS target's "Embed Watch Content" build phase, because XcodeGen's handling of single-target watch apps varies between versions.
 4. Before you ship, deploy the CloudKit schema to Production in the CloudKit Console. Development and Production use separate schemas.
 
 ## Feature map
@@ -134,6 +146,13 @@ Before you build for the first time:
 | Card vault | `Shared/Vault/`, `App/Views/Vault/` | Face ID or passcode, iCloud Keychain, no CVV field, masked numbers, copies that clear after 60 seconds and don't reach other devices. Camera scanning reads the number, expiry and name only. |
 | Member and loyalty cards | `CodeItem` (member), `CodesView`, `ShowCodeIntent` | Code 128, EAN-13, UPC-A, PDF417, Aztec and QR. Checkout view with brightness up. "Show my gym card" with Siri. |
 | AI assistant | `App/AI/SaveAssistant.swift`, `DataActions` | On-device suggestions for title, tags, collection and summary. Text in photos becomes searchable. Addresses, phone numbers, links and dates become one-tap actions. |
+| **Templates** | `Shared/Services/Template.swift`, `FillTemplateView` | `{date}` (16 November 2026), `{shortdate}`, `{time}`, `{day}`, `{cursor}`, `{clipboard}` and fill-in fields such as `{Name}` or `{Name=default}`. Copying a template with fields opens a fill-in sheet with a live preview; without fields it copies rendered. `{{` and `}}` give literal braces. |
+| **Text expansion** | `TextExpander`, `KeyboardActions`, `ItemDetailView` | Give any snippet a shortcut such as `;addr`. Typing it plus a space or punctuation with the Typo keyboard replaces it, and a suggestion strip appears while you type. A template with fields opens a fill panel inside the keyboard, typed with the Typo keys, and Insert moves the cursor to `{cursor}`. The Mac quick panel finds shortcuts too. |
+| **Spotlight** | `Shared/Intents/TypoEntities.swift`, `App/Spotlight/SpotlightSync.swift` | Items, collections and code names are indexed with `IndexedEntity` in a named index. Tapping a result opens it in Typo. There's a toggle and a "Rebuild Search Index" button in Settings. |
+| **Siri and Shortcuts** | `Shared/Intents/CopyIntents.swift`, `TypoShortcuts` | "Copy \<item\> from Typo", "Copy my \<network\> password with Typo" (from the Keychain, cleared after 60 s, never spoken), "Open my \<collection\> collection in Typo", plus Quick Save, Save to Typo and Show Code. |
+| **Apple Watch** | `Watch/`, `WatchWidgets/`, `App/Watch/WatchSync.swift`, `Shared/Watch/WatchPack.swift` | Codes marked "Show on Apple Watch" (member cards, guest Wi-Fi) are rendered on the iPhone and sent with WatchConnectivity. Pinned snippets are sent for reading. A watch-face complication and Smart Stack widget open a chosen card. |
+| **Mac share extension** | `MacShare/`, `Share/ShareView.swift` | The same share sheet as iOS, with tags and collections, from Safari, Finder, Photos or any app's Share menu. |
+| **Category hue sync** | `App/Sync/HueSync.swift` | Category hues follow you between iPhone, iPad and Mac through iCloud key-value storage. |
 | Mac quick panel and clipboard history | `App/Mac/` | ⌥Space (configurable) opens a floating search panel from any app. A menu bar icon opens it too. Clipboard history is opt-in, local only, 200 items or 7 days, and skips content marked private by password managers. |
 
 ## Architecture
@@ -173,6 +192,13 @@ These are platform constraints, not gaps in this code.
 11. **The Wi-Fi QR format has no formal standard.** Typo follows the ZXing reference that camera apps use, with `\ ; , : "` escaped. Test with both an iPhone and an Android phone.
 12. **No Lock Screen code widget.** iOS tints Lock Screen widgets, which can stop a QR code scanning. The code widget is Home Screen and StandBy only.
 13. **The Mac quick panel copies but doesn't paste for you.** Sandboxed apps can't send keystrokes, so after the panel closes you press ⌘V.
+14. **Text expansion works only in the Typo keyboard.** iOS doesn't let apps add to the system Text Replacements, and system-wide expansion on Mac would need Accessibility keystroke access, which doesn't fit the sandbox.
+15. **`{clipboard}` in templates:** on iPhone and iPad, reading the clipboard would show the "Allow Paste?" prompt, so `{clipboard}` becomes a field with a Paste button. On Mac it fills in automatically.
+16. **Apple Watch:**
+    - The watch has no clipboard, so snippets on the watch are for reading.
+    - Brightness can't be raised from an app, and some laser barcode scanners struggle with watch screens. QR readers are usually fine.
+    - The watch shows what the iPhone last sent.
+17. **Siri copying in the background is unverified.** Whether an App Intent can write to the clipboard while the app isn't on screen isn't documented, and reports conflict. The copy intents also return the text, so a Shortcut can add its own "Copy to Clipboard" step if needed.
 
 ## Status: verified vs inferred
 
@@ -185,6 +211,9 @@ Checked against Apple's documentation in November 2026:
 - Vision `DetectBarcodesRequest` and `RecognizeTextRequest` (iOS 18 / macOS 15+, `perform(on:)`).
 - CoreImage `CIFilter.qrCodeGenerator()` with `message` and `correctionLevel`.
 - Foundation Models guided generation: `@Generable`, `@Guide(description:)`, `respond(to:generating:)`.
+- `IndexedEntity` (iOS 18 / macOS 15+) with `attributeSet` and `hideInSpotlight`, `CSSearchableIndex(name:).indexAppEntities(_:)`, `IndexedEntityQuery` reindex methods, and `OpenIntent` with a `target` parameter for opening search results.
+- WatchConnectivity: `WCSession.activate()`, `updateApplicationContext(_:)`, `transferFile(_:metadata:)`, `isPaired`, `isWatchAppInstalled`, and the multi-watch activation callbacks.
+- `CIFilter` isn't available on watchOS, which is why the iPhone renders codes for the watch.
 
 Inferred and needing on-device testing:
 - That the Foundation Models API works inside a keyboard extension. An Apple engineer said the system model doesn't count toward an extension's memory limit, but that was about a different extension type.
@@ -196,6 +225,9 @@ Inferred and needing on-device testing:
 - That `NSFileCoordinator`'s `.forUploading` option zips a folder on iOS (used for collection export).
 - That the bitmap read in `CodeGenerator.read` comes out top row first. If not, codes render mirrored, and the "presets scan" tests will fail.
 - That `CNContactViewController(forNewContact:)` works without asking for Contacts access.
+- That an App Intent run by Siri in the background can write to the clipboard.
+- That `UITextDocumentProxy.adjustTextPosition(byCharacterOffset:)` counts characters as Swift does. Typo counts `Character`s; emoji after `{cursor}` could leave the cursor slightly off.
+- XcodeGen embedding of the single-target watch app, and `DisplayRepresentation.Image(data:)` for Spotlight thumbnails.
 - Everything that only a compiler can confirm. Start with `Dictation.swift`, `SaveToTypoIntent.swift` and the toolbar in `LibraryView.swift`.
 
 ## Privacy
@@ -207,6 +239,8 @@ Inferred and needing on-device testing:
 - **Camera:** used only while scanning. Images are read on the device and are not kept unless the user saves the result.
 - **Clipboard history (Mac):** off by default, never synced, deleted after 7 days, and skips content marked concealed or transient by password managers.
 - **Guest Wi-Fi codes** contain the network password by design. The widget image lives in the App Group container on the device.
+- **Spotlight:** snippet text (first 300 characters), titles, tags, collection names and code names are added to the on-device index. Payment cards, Wi-Fi passwords, member numbers and clipboard history are not. Turning Spotlight off in Settings removes everything.
+- **Apple Watch:** only codes you mark "Show on Apple Watch", and optionally pinned snippets, are sent, directly from iPhone to watch. A guest Wi-Fi code image contains the password by design.
 - **Payment cards and PCI DSS (not legal advice):** the developer never receives card data. Even so, have a qualified adviser confirm the position, and the App Store privacy label, before launch.
 - The keyboard requests Full Access only so it can read the shared library and copy files. It makes no network calls and stores nothing the user types. Say this plainly on the App Store listing and in the keyboard setup screen.
 - iCloud data is stored by Apple under the user's Apple Account, so the developer holds no user data. Before release, have a privacy professional review the App Store privacy label and your privacy policy against the Australian Privacy Principles.
@@ -218,6 +252,9 @@ Inferred and needing on-device testing:
 - Luhn checks against the networks' public test numbers, network detection, formatting, masking, expiry parsing, and reading OCR lines while ignoring the CVV.
 - EAN-13 and UPC-A check digits and patterns, QR matrix shape, and **every style preset rendered and then decoded by Vision**.
 - Collection ordering, counts, and that removing an item from a collection keeps it in the library.
+- Templates: fields in order, defaults, `{cursor}` offset, Australian date and time formats, literal braces, and `{clipboard}` handling.
+- Text expansion: `;addr` followed by a space, full stop or new line; no match mid-word or for unknown shortcuts; suggestions while typing.
+- Apple Watch pack: encoding round trip and the 25-snippet cap.
 
 Manual checks on devices:
 1. Scan a guest Wi-Fi QR with the iPhone Camera app and with an Android phone, then join. Repeat with a password containing `;` and `:`.
@@ -225,13 +262,15 @@ Manual checks on devices:
 3. Scan a QR code, an EAN barcode, printed text and a business card.
 4. Build a collection from the share sheet (Safari link, Photos image, a video, a YouTube link) and check the board, the cover and the zip export.
 5. Mac: ⌥Space opens the panel from any app. History stays off until turned on. A password copied from the Passwords app does not appear in it.
+6. Keyboard: in Notes, type `;addr` and a space with the Typo keyboard. A template with `{Name}` opens the fill panel, and Insert leaves the cursor at `{cursor}`.
+7. Spotlight: search a snippet's words on iPhone and Mac, and tap the result to open it. Vault cards never appear. Turning Spotlight off removes Typo's results.
+8. Siri: "Copy my parking from Typo" with Typo open and from the Lock Screen. Note whether the background copy works.
+9. Apple Watch: mark a gym card "Show on Apple Watch"; it arrives on the watch, scans, and the complication opens it.
+10. Mac share: share a Safari page into a collection. Change a category hue on iPhone and check the Mac picks it up.
 
 ## Next steps
 
-1. Get it compiling on Xcode 26, then test on an iPhone with Apple Intelligence turned on.
-2. Apple Watch app: member cards and the guest Wi-Fi QR on the wrist.
-3. Snippet templates with fill-in fields (`{name}`, `{date}`) and keyboard text expansion.
-4. Spotlight indexing and "Copy my …" Siri phrases for items.
-5. Shared collections with family or a team. CloudKit sharing needs Core Data rather than SwiftData.
-6. Mac share extension. Sync category hues through `NSUbiquitousKeyValueStore`.
-7. Move to Swift 6 language mode.
+1. Get it compiling on Xcode 26, then test on an iPhone with Apple Intelligence turned on and a paired Apple Watch.
+2. Shared collections with family or a team. CloudKit sharing needs Core Data rather than SwiftData, so this is a storage migration.
+3. Rebuild the app icon in Icon Composer for layered Liquid Glass icons (dark and tinted variants).
+4. Move to Swift 6 language mode.

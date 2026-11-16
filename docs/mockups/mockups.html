@@ -169,6 +169,30 @@
   .kbd{font-size:11px;color:var(--ter);font-family:"JetBrains Mono",monospace}
   .aicard{position:absolute;right:56px;top:150px;width:400px;border-radius:22px;padding:14px}
   .dash{border:1px dashed #9a9aa6;border-radius:10px;padding:2px 7px;color:#444}
+
+  /* round 3 */
+  .wstage{width:1100px;height:420px;border-radius:28px;background:linear-gradient(135deg,#dde3ef,#efe7f5);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .wtrio{display:flex;gap:70px}
+  .wcase{width:232px;height:276px;border-radius:64px;background:linear-gradient(145deg,#4a4a50,#1c1c20);padding:14px;box-shadow:0 30px 60px rgba(20,20,60,.3),inset 0 1px 1px rgba(255,255,255,.3)}
+  .watchs{width:204px;height:248px;border-radius:52px;background:#000;color:#fff;overflow:hidden;position:relative;padding:30px 12px 10px}
+  .wtime{position:absolute;top:12px;right:22px;font-size:13px;font-weight:600}
+  .wtitle{font-size:19px;font-weight:700;margin-left:6px;color:#B9C8FF}
+  .wsec{font-size:11px;color:#9a9aa6;margin:8px 6px 4px;font-weight:600}
+  .wcard{display:flex;gap:8px;align-items:center;padding:8px;border-radius:18px;margin-bottom:6px;border:.5px solid rgba(255,255,255,.25)}
+  .wcard b{display:block;font-size:13.5px}.wcard small{font-size:10.5px;color:#c7c7d1}
+  .wtile{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center}
+  .wsnip{background:#1d1d22;border-radius:16px;padding:8px 10px}.wsnip b{display:block;font-size:13px}.wsnip small{font-size:10.5px;color:#9a9aa6}
+  .face{background:radial-gradient(circle at 50% 30%,#2b2f4a,#000 70%);padding:0}
+  .facetime{position:absolute;top:58px;width:100%;text-align:center;font-family:"Inter Display";font-size:56px;font-weight:600;letter-spacing:-2px}
+  .facedate{position:absolute;top:34px;width:100%;text-align:center;font-size:12px;font-weight:700;color:#FF9F6B}
+  .cplx{position:absolute;color:#fff}
+  .cplx.rect{left:16px;right:16px;bottom:58px;background:rgba(255,255,255,.12);border-radius:12px;padding:6px 10px;font-size:13px}
+  .cplx.rect small{display:block;color:#c7c7d1;font-size:10.5px}
+  .cplx.circ{bottom:14px;width:40px;height:40px;border-radius:20px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;left:18px}
+  .flabel{font-size:12px;font-weight:600;color:var(--sec);margin:10px 0 6px}
+  .finput{border-radius:14px;padding:11px 12px;font-size:16px;background:rgba(255,255,255,.55)}
+  .srow2{display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:.5px solid rgba(0,0,0,.08);font-size:14px}
+  .srow2 small{display:block;color:var(--sec);font-size:12px;margin-top:1px}
 </style>
 </head>
 <body>
@@ -502,6 +526,139 @@
   </div>
 </div><div class="caption" style="max-width:none">Left: the Mac quick panel (⌥Space) searches Typo and opt-in clipboard history from any app. Right: Apple Intelligence suggests a title, tags and a collection for a new save.</div></div>
 
+<!-- 17. Apple Watch -->
+<div class="shot" style="width:100%"><div id="watch" class="wstage">
+  <div class="wtrio">
+    <div class="wcase"><div class="watchs">
+      <div class="wtime">9:41</div><div class="wtitle">Typo</div>
+      <div class="wsec">Cards</div>
+      <div class="wcard" style="background:linear-gradient(135deg,rgba(183,211,176,.45),rgba(111,162,135,.3))"><div class="wtile" style="background:linear-gradient(135deg,#B7D3B0,#6FA287)" data-icon="wifiw"></div><div><b>Lighthouse Guest</b><small>Guest Wi-Fi</small></div></div>
+      <div class="wcard" style="background:linear-gradient(135deg,rgba(255,217,154,.45),rgba(240,160,68,.3))"><div class="wtile" style="background:linear-gradient(135deg,#FFD99A,#F0A044)" data-icon="barw"></div><div><b>Gym</b><small>Member card</small></div></div>
+      <div class="wsec">Pinned</div>
+      <div class="wsnip"><b>Parking</b><small>Level 3, bay 42…</small></div>
+    </div></div>
+    <div class="wcase"><div class="watchs" style="background:#fff;padding:14px 12px">
+      <div class="wtime" style="color:#000;left:auto;right:18px">9:41</div>
+      <div style="color:#111;font-weight:700;font-size:13px;margin:4px 0 6px 6px">‹ Gym</div>
+      <div data-wbar style="height:120px;margin-top:20px"></div>
+      <div style="text-align:center;font-family:'JetBrains Mono',monospace;color:#000;font-size:11px;letter-spacing:1.5px;margin-top:6px">4006381333931</div>
+    </div></div>
+    <div class="wcase"><div class="watchs face">
+      <div class="facetime">10:09</div>
+      <div class="facedate">MON 16</div>
+      <div class="cplx rect"><div style="display:flex;gap:5px;align-items:center;color:#FFD99A;font-weight:700"><span data-icon="barw2"></span>Gym</div><small>Tap to show</small></div>
+      <div class="cplx circ" style="left:18px"><span data-icon="wifiw"></span></div>
+      <div class="cplx circ" style="right:18px;left:auto"><span data-icon="qrw"></span></div>
+    </div></div>
+  </div>
+</div><div class="caption" style="max-width:none">Apple Watch: your cards and pinned snippets, a full-screen barcode at the gym, and a watch-face complication that opens it in one tap.</div></div>
+
+<!-- 18. Template fill sheet -->
+<div class="shot"><div class="phone" id="template">
+  <div class="amb"><i style="width:360px;height:360px;left:-60px;top:-40px;background:linear-gradient(135deg,#C7B6F2,#7C6AD6)"></i><i style="width:320px;height:320px;right:-90px;top:320px;background:linear-gradient(135deg,#8FB8FF,#4B63E6)"></i></div>
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+  <div class="topbar"><div class="gcirc glass" data-icon="xmark"></div><div class="disp" style="font-weight:700;font-size:17px">Meeting follow-up</div><div class="gbtn glass" style="color:#4B63E6">Copy</div></div>
+  <div class="panel mat" style="margin-top:8px">
+    <div class="flabel">Name</div><div class="finput glass">Sam<span class="caret"></span></div>
+    <div class="flabel">Topic</div><div class="finput glass" style="color:#222">the Q3 roadmap</div>
+    <div class="flabel">Clipboard</div><div style="display:flex;gap:8px;align-items:center"><div class="finput glass" style="flex:1;color:var(--ter)">Clipboard</div><div class="gcirc" style="background:#4B63E6;color:#fff;width:40px;height:40px" data-icon="pastewhite"></div></div>
+  </div>
+  <div class="panel" style="background:linear-gradient(135deg,rgba(199,182,242,.6),rgba(124,106,214,.3));border:.5px solid rgba(255,255,255,.7)">
+    <div style="font-size:13px;font-weight:600;color:var(--sec);margin-bottom:8px">Preview</div>
+    <div style="font-size:15.5px;line-height:1.45">Hi Sam,<br><br>Thanks for your time today, Monday 16 November 2026. As promised, here are my notes on the Q3 roadmap.<br><br>Talk soon,<br>Alex</div>
+  </div>
+  <div style="padding:6px 22px;font-size:12.5px;color:var(--sec);line-height:1.4">Template: Hi {Name}, … today, {day} {date}. … notes on {Topic}. {cursor}</div>
+  <div class="home"></div>
+</div><div class="caption">Templates: fill in the fields, and dates and times fill themselves. The preview updates as you type.</div></div>
+
+<!-- 19. Keyboard: suggestion strip -->
+<div class="shot"><div class="phone" id="expand">
+  <div class="island"></div>
+  <div class="chat">
+    <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+    <div class="chathead"><div class="avatar">RK</div><div style="font-size:12px;margin-top:5px;font-weight:500">Riley ›</div></div>
+    <div class="msgs"><div class="bub in">What's the address for Saturday?</div></div>
+    <div class="compose"><span data-icon="plusgrey"></span><div class="field glass" style="background:rgba(255,255,255,.7)">It's at ;ad<span class="caret"></span></div></div>
+    <div class="kb">
+      <div class="kbbar" style="gap:8px">
+        <span data-icon="textplus"></span>
+        <div class="polish glass" style="background:rgba(124,106,214,.12);white-space:nowrap;font-size:13.5px"><b style="font-family:'JetBrains Mono',monospace">;addr</b><span style="color:var(--sec);font-weight:500">Home address</span></div>
+        <div class="polish glass" style="background:rgba(124,106,214,.12);white-space:nowrap;font-size:13.5px"><b style="font-family:'JetBrains Mono',monospace">;admin</b><span style="color:var(--sec);font-weight:500">Admin email</span></div>
+      </div>
+      <div class="keys" data-keys2></div>
+      <div class="sysrow"><span data-icon="emoji"></span><span data-icon="micgrey"></span></div>
+    </div>
+  </div>
+  <div class="home"></div>
+</div><div class="caption">Text expansion: type ;addr and a space, or tap a suggestion, and the snippet replaces it.</div></div>
+
+<!-- 20. Keyboard: fill panel -->
+<div class="shot"><div class="phone" id="fill">
+  <div class="island"></div>
+  <div class="chat">
+    <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+    <div class="chathead"><div class="avatar">SM</div><div style="font-size:12px;margin-top:5px;font-weight:500">Sam ›</div></div>
+    <div class="msgs"><div class="bub in">Can you send me the meeting notes?</div></div>
+    <div class="compose"><span data-icon="plusgrey"></span><div class="field glass" style="background:rgba(255,255,255,.7)"><span class="caret"></span></div></div>
+    <div class="kb">
+      <div style="padding:8px 8px 4px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="gcirc glass" style="width:34px;height:34px" data-icon="xmark"></div>
+          <span class="kchip" style="background:linear-gradient(135deg,rgba(199,182,242,.75),rgba(124,106,214,.4));color:#3F318F">Name</span>
+          <span class="kchip glass" style="background:rgba(255,255,255,.5)">Topic</span>
+          <div style="flex:1"></div>
+          <div class="gbtn glass" style="height:36px;font-size:15px">Insert</div>
+        </div>
+        <div class="mat" style="margin-top:8px;border-radius:12px;padding:9px 12px;font-size:16px">Sam<span class="caret" style="background:#4B63E6"></span></div>
+      </div>
+      <div class="keys" data-keys3></div>
+      <div class="sysrow"><span data-icon="emoji"></span><span data-icon="micgrey"></span></div>
+    </div>
+  </div>
+  <div class="home"></div>
+</div><div class="caption">A template with fields opens a fill panel in the keyboard. Type into each field with the Typo keys, then Insert.</div></div>
+
+<!-- 21. Spotlight -->
+<div class="shot"><div class="phone" id="spotlight" style="background:linear-gradient(160deg,#c9d6ee,#e8dff3 60%,#d5ece9)">
+  <div class="amb" style="opacity:.4"><i style="width:360px;height:360px;left:-60px;top:-40px;background:linear-gradient(135deg,#8FB8FF,#4B63E6)"></i></div>
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+  <div class="search glass" style="margin:18px 16px 16px;height:46px;border-radius:23px;color:#111;font-size:17px"><span data-icon="search"></span>parking</div>
+  <div style="padding:0 22px 8px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px"><img src="../brand/typo-icon.svg" style="width:22px;height:22px;border-radius:6px">Typo</div>
+  <div class="panel mat" style="padding:6px 14px">
+    <div class="srow2"><div data-tile="Ocean|text|36"></div><div style="flex:1"><b>Parking</b><small>Level 3, bay 42. Exit via Lift B.</small></div></div>
+    <div class="srow2"><div data-tile="Dusk|text|36"></div><div style="flex:1"><b>Office parking instructions</b><small>Text Snippet · ;park</small></div></div>
+    <div class="srow2" style="border:0"><div data-tile="Coral|collection|36"></div><div style="flex:1"><b>Melbourne trip</b><small>12 items</small></div></div>
+  </div>
+  <div style="padding:14px 22px 8px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px"><span data-icon="siri"></span>Siri</div>
+  <div class="panel glass" style="padding:14px;background:rgba(255,255,255,.45)">
+    <div style="font-size:13px;color:var(--sec)">"Copy my parking from Typo"</div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:8px"><span data-icon="okfill"></span><b>Copied Parking.</b></div>
+  </div>
+  <div style="padding:10px 22px;font-size:12px;color:var(--sec);line-height:1.4">Bank cards, Wi-Fi passwords and clipboard history are never added to search.</div>
+  <div class="home"></div>
+</div><div class="caption">Spotlight and Siri: Typo items, collections and codes appear in system search. Siri can copy a snippet or a Wi-Fi password.</div></div>
+
+<!-- 22. Mac share -->
+<div class="shot" style="width:100%"><div class="mac" id="macshare" style="height:560px;background:linear-gradient(135deg,#e7ebf3,#f1ecf6)">
+  <div style="position:absolute;left:40px;top:40px;width:640px;height:470px;border-radius:12px;background:#fff;box-shadow:0 20px 50px rgba(20,20,60,.18);overflow:hidden">
+    <div style="height:44px;background:#f4f4f6;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:.5px solid #ddd">
+      <i style="width:12px;height:12px;border-radius:6px;background:#FF5F57;display:block"></i><i style="width:12px;height:12px;border-radius:6px;background:#FEBC2E;display:block"></i><i style="width:12px;height:12px;border-radius:6px;background:#28C840;display:block"></i>
+      <div style="flex:1;margin:0 40px;height:28px;border-radius:8px;background:#e9e9ee;font-size:12.5px;color:#555;display:flex;align-items:center;justify-content:center">example.com/articles/design-is-how-it-works</div>
+    </div>
+    <div style="padding:30px 40px"><div style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.2">Design is how it works</div><div style="margin-top:14px;height:10px;width:90%;background:#eee;border-radius:5px"></div><div style="margin-top:10px;height:10px;width:80%;background:#eee;border-radius:5px"></div><div style="margin-top:10px;height:10px;width:85%;background:#eee;border-radius:5px"></div><div style="margin-top:24px;height:150px;border-radius:12px;background:linear-gradient(135deg,#D7DCE3,#8D97A6)"></div></div>
+  </div>
+  <div class="mat" style="position:absolute;right:60px;top:70px;width:420px;border-radius:20px;padding:16px;box-shadow:0 24px 60px rgba(20,20,60,.25);background:rgba(255,255,255,.85)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="color:#4B63E6">Cancel</span><b>Typo</b><b style="color:#4B63E6">Save</b></div>
+    <div class="srow2" style="border:0"><div data-tile="Lagoon|link|30"></div><div style="flex:1"><b>Design is how it works</b><small>example.com</small></div></div>
+    <div style="font-size:11px;font-weight:600;color:var(--sec);margin:12px 0 6px">TAGS</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip l" style="background:linear-gradient(135deg,#C7B6F2C4,#7C6AD666);color:#3F318F">Design ✓</span><span class="chip l glass" style="background:rgba(255,255,255,.6)">Work</span></div>
+    <div style="font-size:11px;font-weight:600;color:var(--sec);margin:12px 0 6px">COLLECTION</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip l" style="background:linear-gradient(135deg,#D7DCE3C4,#8D97A666);color:#3D4654">Steve Jobs ✓</span><span class="chip l glass" style="background:rgba(255,255,255,.6)">Reading list</span></div>
+  </div>
+</div><div class="caption" style="max-width:none">Mac share extension: share from Safari, Finder or Photos straight into Typo, with tags and a collection.</div></div>
+
 <script>
 const H = {
   Sage:['#B7D3B0','#6FA287','#2E5B47'], Lagoon:['#8EE3E0','#2F9FB4','#135E6C'], Ocean:['#8FB8FF','#4B63E6','#213A9E'],
@@ -667,6 +824,29 @@ $('[data-presets]').innerHTML = [['Classic','#15161C','#15161C'],['Ocean','#3d55
   s.split('').forEach((c,i)=>{ if(c==='1') r+=`<rect x="${i*w}" y="0" width="${w+0.2}" height="120"/>`});
   $('[data-barcode]').innerHTML=`<svg width="100%" height="120" viewBox="0 0 320 120" preserveAspectRatio="none">${r}</svg>`;
 })();
+document.querySelectorAll('[data-tile]').forEach(el=>{const [h,s,z]=el.dataset.tile.split('|'); el.innerHTML=tile(h,s,+z);});
+document.querySelectorAll('[data-icon]').forEach(el=>{ if(!el.innerHTML) el.innerHTML = I[el.dataset.icon]||''; });
+
+// ---- round 3 ----
+I.wifiw='<span style="color:#fff">'+W('<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.3" fill="currentColor"/>',17)+'</span>';
+I.barw='<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><rect x="3" y="5" width="2" height="14"/><rect x="6.5" y="5" width="1" height="14"/><rect x="9" y="5" width="2.5" height="14"/><rect x="13" y="5" width="1" height="14"/><rect x="15.5" y="5" width="2" height="14"/><rect x="19" y="5" width="1.5" height="14"/></svg>';
+I.barw2='<svg width="14" height="14" viewBox="0 0 24 24" fill="#FFD99A"><rect x="3" y="5" width="2" height="14"/><rect x="6.5" y="5" width="1" height="14"/><rect x="9" y="5" width="2.5" height="14"/><rect x="13" y="5" width="1" height="14"/><rect x="15.5" y="5" width="2" height="14"/><rect x="19" y="5" width="1.5" height="14"/></svg>';
+I.qrw='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z" fill="#fff"/></svg>';
+I.textplus='<svg width="22" height="22" viewBox="0 0 24 24"><defs><linearGradient id="tp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C7B6F2"/><stop offset="1" stop-color="#7C6AD6"/></linearGradient></defs><path d="M3 6h12M3 11h12M3 16h7M17 13v8M13 17h8" stroke="url(#tp)" stroke-width="2.2" stroke-linecap="round"/></svg>';
+SYM.collection=W('<rect x="4" y="9" width="16" height="11" rx="2.5"/><path d="M6 6.5h12M8 4h8"/>',0,0,'0 0 24 24',2.2);
+(function(){
+  const L=["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"];
+  const P=["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
+  const R=d=>L[d].split('').map(c=>c==='0'?'1':'0').join(''); const G=d=>R(d).split('').reverse().join('');
+  const dg='4006381333931'.split('').map(Number);
+  let s='101'; dg.slice(1,7).forEach((d,i)=>s+= P[dg[0]][i]==='L'?L[d]:G(d)); s+='01010'; dg.slice(7).forEach(d=>s+=R(d)); s+='101';
+  const w=180/s.length; let r='';
+  s.split('').forEach((c,i)=>{ if(c==='1') r+=`<rect x="${i*w}" y="0" width="${w+0.15}" height="120"/>`});
+  document.querySelector('[data-wbar]').innerHTML=`<svg width="180" height="120" viewBox="0 0 180 120" preserveAspectRatio="none">${r}</svg>`;
+})();
+const keysHTML = document.querySelector('[data-keys]').innerHTML;
+document.querySelector('[data-keys2]').innerHTML = keysHTML;
+document.querySelector('[data-keys3]').innerHTML = keysHTML;
 document.querySelectorAll('[data-tile]').forEach(el=>{const [h,s,z]=el.dataset.tile.split('|'); el.innerHTML=tile(h,s,+z);});
 document.querySelectorAll('[data-icon]').forEach(el=>{ if(!el.innerHTML) el.innerHTML = I[el.dataset.icon]||''; });
 </script>

@@ -433,6 +433,7 @@ struct ItemListView: View {
 
     private func copy(_ items: [TypoItem]) {
         guard !items.isEmpty else { return }
+        if model.interceptTemplateCopy(items) { return }
         Clipboard.copy(items)
         model.show(items.count == 1 ? "Copied" : "Copied \(items.count) items")
         #if os(iOS)

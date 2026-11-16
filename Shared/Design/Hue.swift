@@ -1,5 +1,20 @@
 import SwiftUI
 
+extension Color {
+    /// `#RRGGBB` → Color. Falls back to grey for bad input.
+    init(hex: String) {
+        let cleaned = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#")).uppercased()
+        var value: UInt64 = 0
+        guard cleaned.count == 6, Scanner(string: cleaned).scanHexInt64(&value) else {
+            self = .gray
+            return
+        }
+        self = Color(red: Double((value >> 16) & 0xFF) / 255,
+                     green: Double((value >> 8) & 0xFF) / 255,
+                     blue: Double(value & 0xFF) / 255)
+    }
+}
+
 /// A named, soothing two-stop gradient. Used for categories and tags instead of flat colours.
 ///
 /// Every hue has a one-word name people can remember ("Sage", "Lagoon"), a light
@@ -164,18 +179,5 @@ struct AmbientBackground: View {
         }
         .ignoresSafeArea()
         .accessibilityHidden(true)
-    }
-}
-
-extension PolishStyle {
-    /// Each style has its own hue so the choices are easy to tell apart.
-    var hue: Hue {
-        switch self {
-        case .tidy: Hues.named("Sage")
-        case .professional: Hues.named("Ocean")
-        case .friendly: Hues.named("Blush")
-        case .concise: Hues.named("Amber")
-        case .prompt: Hues.named("Dusk")
-        }
     }
 }

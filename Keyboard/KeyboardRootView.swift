@@ -10,10 +10,16 @@ struct KeyboardRootView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            topBar
+            if actions.fill != nil {
+                TemplateFillPanel(actions: actions)
+            } else if !actions.suggestions.isEmpty {
+                suggestionStrip
+            } else {
+                topBar
+            }
             // Banner sits at the bottom so it never covers the category chips.
             ZStack(alignment: .bottom) {
-                switch tab {
+                switch actions.fill != nil ? .keys : tab {
                 case .typo:
                     if libraryAvailable { TypoGrid(actions: actions) } else { FullAccessPrompt() }
                 case .keys:
@@ -31,6 +37,32 @@ struct KeyboardRootView: View {
             }
         }
         .animation(.smooth, value: actions.banner)
+        .animation(.smooth, value: actions.suggestions)
+    }
+
+    /// Shortcuts matching what's typed after ";". Tap one to expand it.
+    private var suggestionStrip: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            GlassEffectContainer(spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: "text.badge.plus").foregroundStyle(Hues.named("Dusk").gradient)
+                    ForEach(actions.suggestions, id: \.self) { shortcut in
+                        Button { actions.expandSuggestion(shortcut) } label: {
+                            HStack(spacing: 6) {
+                                Text(";" + shortcut).font(.footnote.monospaced().weight(.bold))
+                                Text(actions.expansions[shortcut]?.title ?? "").font(.footnote).lineLimit(1)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                        }
+                        .buttonStyle(.plain)
+                        .glassEffect(.regular.tint(Hues.named("Dusk").base.opacity(0.12)).interactive())
+                    }
+                }
+            }
+            .padding(.horizontal, 10)
+        }
+        .frame(height: 52)
     }
 
     /// Liquid Glass control strip: mode switch, Polish, next keyboard.
@@ -211,6 +243,54 @@ private struct FullAccessPrompt: View {
             Label("Allow Full Access", systemImage: "lock")
         } description: {
             Text("To show your Typo library here, go to Settings › General › Keyboard › Keyboards › Typo and turn on Allow Full Access. The keyboard doesn't connect to the internet or store what you type.")
+        }
+    }
+}
+
+/// Fill a template's fields with the Typo keys, then insert it.
+private struct TemplateFillPanel: View {
+    let actions: KeyboardActions
+
+    var body: some View {
+        if let fill = actions.fill {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Button { actions.cancelFill() } label: { Image(systemName: "xmark").frame(width: 32, height: 32) }
+                        .buttonStyle(.plain).glassEffect(.regular.interactive(), in: Circle())
+                        .accessibilityLabel("Cancel")
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 6) {
+                            ForEach(Array(fill.fields.enumerated()), id: \.offset) { index, field in
+                                let on = index == fill.active
+                                Button { actions.activateField(index) } label: {
+                                    Text(field.name).font(.caption.weight(.semibold))
+                                        .foregroundStyle(on ? Hues.named("Dusk").inkColor : .primary)
+                                        .padding(.horizontal, 10).padding(.vertical, 6)
+                                        .background(on ? AnyShapeStyle(Hues.named("Dusk").softGradient) : AnyShapeStyle(.thinMaterial), in: Capsule())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityAddTraits(on ? .isSelected : [])
+                            }
+                        }
+                    }
+                    Button("Insert") { actions.finishFill() }
+                        .font(.subheadline.weight(.bold))
+                        .buttonStyle(.glass)
+                }
+                let field = fill.fields[fill.active]
+                let value = fill.values[field.id] ?? ""
+                HStack(spacing: 0) {
+                    Text(value.isEmpty ? (field.defaultValue.isEmpty ? field.name : field.defaultValue) : value)
+                        .foregroundStyle(value.isEmpty ? .tertiary : .primary)
+                    Rectangle().fill(Hues.named("Ocean").base).frame(width: 2, height: 18)
+                    Spacer(minLength: 0)
+                }
+                .font(.body)
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .accessibilityLabel("\(field.name): \(value)")
+            }
+            .padding(.horizontal, 8).padding(.vertical, 6)
         }
     }
 }

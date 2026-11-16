@@ -113,5 +113,14 @@ struct TypoShortcuts: AppShortcutsProvider {
         AppShortcut(intent: ShowCodeIntent(),
                     phrases: ["Show my \(\.$code) in \(.applicationName)", "Show \(\.$code) from \(.applicationName)"],
                     shortTitle: "Show Code", systemImageName: "qrcode")
+        AppShortcut(intent: CopyItemIntent(),
+                    phrases: ["Copy \(\.$item) from \(.applicationName)", "Copy my \(\.$item) with \(.applicationName)"],
+                    shortTitle: "Copy from Typo", systemImageName: "doc.on.doc")
+        AppShortcut(intent: CopyWiFiPasswordIntent(),
+                    phrases: ["Copy my \(\.$code) password with \(.applicationName)", "Copy the \(\.$code) Wi-Fi password from \(.applicationName)"],
+                    shortTitle: "Copy Wi-Fi Password", systemImageName: "wifi")
+        AppShortcut(intent: OpenCollectionIntent(),
+                    phrases: ["Open my \(\.$target) collection in \(.applicationName)", "Show \(\.$target) in \(.applicationName)"],
+                    shortTitle: "Open Collection", systemImageName: "square.stack.3d.up")
     }
 }
