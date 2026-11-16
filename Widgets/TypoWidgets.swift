@@ -7,6 +7,7 @@ struct TypoWidgetBundle: WidgetBundle {
     var body: some Widget {
         QuickSaveControl()
         QuickSaveLockScreenWidget()
+        CodeWidget()
     }
 }
 

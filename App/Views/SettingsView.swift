@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Query(sort: \Tag.name) private var tags: [Tag]
     @AppStorage(AppGroup.Key.recentsAgeOutDays, store: AppGroup.defaults) private var ageOutDays = 3
     @State private var hueRevision = 0
+    @AppStorage(SaveAssistant.autoApplyKey, store: AppGroup.defaults) private var autoApplySuggestions = false
 
     var body: some View {
         Form {
@@ -81,6 +82,18 @@ struct SettingsView: View {
             } header: {
                 Text("Control Centre, Lock Screen and Action button")
             }
+            #endif
+
+            Section {
+                Toggle("Apply suggestions automatically", isOn: $autoApplySuggestions)
+            } header: {
+                Text("Assistant")
+            } footer: {
+                Text("Apple Intelligence suggests tags, a collection and a summary for new saves, and Typo reads text in photos so you can search it. All on this device. When this is off, suggestions appear as dashed chips you can accept.")
+            }
+
+            #if os(macOS)
+            MacSettingsSection()
             #endif
 
             Section {

@@ -18,9 +18,25 @@ These are **design mockups**, not simulator screenshots. They are drawn in HTML 
 |---|---|---|
 | ![Dictate](docs/screenshots/dictate.png) | ![Quick Save](docs/screenshots/quicksave.png) | ![Hue picker](docs/screenshots/hues.png) |
 
-| Sync status | |
-|---|---|
-| ![Sync status](docs/screenshots/sync.png) | |
+| Sync status | Collection board | QR studio |
+|---|---|---|
+| ![Sync status](docs/screenshots/sync.png) | ![Collection](docs/screenshots/collection.png) | ![QR studio](docs/screenshots/studio.png) |
+
+| Guest Wi-Fi | Scan anything | Card vault |
+|---|---|---|
+| ![Guest Wi-Fi](docs/screenshots/wifi.png) | ![Scan](docs/screenshots/scan.png) | ![Vault](docs/screenshots/vault.png) |
+
+| Member card | | |
+|---|---|---|
+| ![Member card](docs/screenshots/member.png) | | |
+
+![Mac quick panel and AI suggestions](docs/screenshots/quickpanel.png)
+
+To re-render the screenshots after editing the mockups (Playwright and Chromium required):
+
+```bash
+node docs/mockups/render.js docs/mockups/mockups.html docs/screenshots 2
+```
 
 ![Mac](docs/screenshots/mac.png)
 
@@ -105,12 +121,20 @@ Before you build for the first time:
 | Tap to copy as the real thing | `Shared/Services/Clipboard.swift` | GIFs copy as `com.compuserve.gif`, so they stay animated. HEIC photos also get a PNG copy for apps that only accept PNG. |
 | Multi-select copy | Select mode (iOS), ⌘-click (Mac) | |
 | Quick Look | Context menu and item details | |
-| Five categories, coloured tags, custom category colours | `ItemKind`, `Tag`, `SettingsView` | |
+| Six categories (Videos added in round 2), named-hue tags, custom category hues | `ItemKind`, `Tag`, `Hues`, `SettingsView` | |
 | Dictate, then AI rewrite | `App/Speech/Dictation.swift`, `Shared/AI/TextPolisher.swift`, `DictateView` | Five styles: Tidy up, Professional, Friendly, Shorter, AI prompt. Everything runs on the device. |
 | Recents, clear in one tap, tagged items age out | `ItemListView`, `TypoLibrary.ageOutRecents()` | The age-out delay is set in Settings (default 3 days). |
 | Pin, drag to reorder, search, rename | `ItemListView`, `ItemDetailView` | Link titles are fetched with `LPMetadataProvider` and never overwrite a name you set. |
 | Private iCloud sync with a status screen and repair | `TypoStore`, `App/SyncMonitor.swift`, `SyncStatusView` | |
-| Keyboard | `Keyboard/` | A library tab, a basic ABC typing tab, and Polish. |
+| Keyboard | `Keyboard/` | A library tab (with category and collection chips), a basic ABC typing tab, and Polish. |
+| **Collections** (mixed folders, e.g. "Steve Jobs": quotes, photos, videos, a YouTube speech, articles, GIFs) | `TypoCollection`, `CollectionLibrary`, `App/Views/Collections/` | Shown as a board: quotes become cards, photos and video posters become tiles, links show their preview image (YouTube gets a play badge). An item can be in several collections. Add by paste, drag and drop, "Add Items", the share sheet, Quick Save, Dictate or an item's context menu. Manual order, cover, and export as a zip with a `Notes.md`. |
+| Videos category | `ItemKind.video`, `TypoLibrary.makeVideoThumbnail` | A sixth category so videos no longer land in Documents. The poster frame comes from about one second in. |
+| QR studio and guest Wi-Fi | `Shared/Codes/`, `App/Views/Codes/` | Link, text, Wi-Fi, contact, email, phone, message, location and event codes. Decorate with dot and eye shapes, a hue, a centre badge and a caption, then check it still scans (Vision). Present full screen with the brightness up. Share as PNG. Show on the Home Screen or StandBy widget. |
+| Scan anything | `App/Views/Scan/` | VisionKit live scanner (iPhone and iPad): QR codes, barcodes, printed text and business cards, each routed to the right action. QR codes found inside saved photos are offered too (Mac as well). |
+| Card vault | `Shared/Vault/`, `App/Views/Vault/` | Face ID or passcode, iCloud Keychain, no CVV field, masked numbers, copies that clear after 60 seconds and don't reach other devices. Camera scanning reads the number, expiry and name only. |
+| Member and loyalty cards | `CodeItem` (member), `CodesView`, `ShowCodeIntent` | Code 128, EAN-13, UPC-A, PDF417, Aztec and QR. Checkout view with brightness up. "Show my gym card" with Siri. |
+| AI assistant | `App/AI/SaveAssistant.swift`, `DataActions` | On-device suggestions for title, tags, collection and summary. Text in photos becomes searchable. Addresses, phone numbers, links and dates become one-tap actions. |
+| Mac quick panel and clipboard history | `App/Mac/` | ⌥Space (configurable) opens a floating search panel from any app. A menu bar icon opens it too. Clipboard history is opt-in, local only, 200 items or 7 days, and skips content marked private by password managers. |
 
 ## Architecture
 
@@ -118,8 +142,10 @@ Before you build for the first time:
 App/        SwiftUI app (iOS + macOS): library, quick save, dictation, sync, settings
 Keyboard/   Custom keyboard extension (iOS)
 Share/      Share extension (iOS)
-Widgets/    Control Centre control + Lock Screen widget (iOS)
-Shared/     Model, store, ingest/classify, clipboard, AI polish, App Intents
+Widgets/    Control Centre control, Lock Screen widget, code widget (iOS)
+Shared/     Model, store, ingest/classify, clipboard, AI polish, App Intents,
+            Codes/ (QR and barcode engine), Vault/ (Keychain, card logic)
+Tests/      Unit tests (Swift Testing), hosted in the Mac app
 Config/     Info.plists and entitlements
 ```
 
@@ -127,6 +153,7 @@ How each process uses the store:
 
 - **App**: owns the SwiftData store and runs CloudKit sync.
 - **Keyboard**: opens the same store **read-only** with no CloudKit. Sync never runs inside the keyboard's small memory budget, and the keyboard shows only thumbnails, never full files.
+- **Secrets** (card numbers and Wi-Fi passwords) never go into SwiftData or CloudKit. They live in the iCloud Keychain, and `CodeItem` stores only a Keychain reference. `Shared/Vault` and `Shared/Codes` are excluded from the keyboard and share extension targets.
 - **Share extension**: never writes to the store. It writes each save to an inbox folder in the App Group and pings the app with a Darwin notification. The app imports from the inbox at launch, when it becomes active, and when it receives the ping. This avoids two processes mirroring one store to CloudKit.
 
 ## Limitations
@@ -140,6 +167,12 @@ These are platform constraints, not gaps in this code.
 5. **Sync timing is up to Apple.** No API forces a sync or reports per-item sync state. The status screen shows the last completed send and receive, the iCloud account state and the last error. Repair re-queues every item for upload; it deletes nothing.
 6. **Large files.** Extensions are capped at 50 MB per item and the app at 250 MB. The keyboard won't copy files over 20 MB. All of these are memory-safety limits.
 7. **No Mac share extension yet.** On Mac you can save by paste, drag and drop, ⌘⇧V, file import and Shortcuts.
+8. **Vault Face ID is enforced by Typo, not by the Keychain item itself.** iCloud Keychain can't sync items that demand biometrics at the OS level. Cards are still encrypted by the device Keychain and only readable while the device is unlocked. Typo adds the Face ID or passcode gate, and relocks 60 seconds after leaving the app.
+9. **Face ID can't be used inside the keyboard**, so the vault is never shown there.
+10. **No live scanner on Mac.** VisionKit's live scanner is iPhone and iPad only. On Mac, Typo finds codes in images you drop or paste.
+11. **The Wi-Fi QR format has no formal standard.** Typo follows the ZXing reference that camera apps use, with `\ ; , : "` escaped. Test with both an iPhone and an Android phone.
+12. **No Lock Screen code widget.** iOS tints Lock Screen widgets, which can stop a QR code scanning. The code widget is Home Screen and StandBy only.
+13. **The Mac quick panel copies but doesn't paste for you.** Sandboxed apps can't send keystrokes, so after the panel closes you press ⌘V.
 
 ## Status: verified vs inferred
 
@@ -147,12 +180,22 @@ Checked against Apple's documentation in November 2026:
 - `LanguageModelSession(instructions:)`, `respond(to:)` and `.content` (Foundation Models, iOS/macOS 26+).
 - The `SpeechAnalyzer` / `SpeechTranscriber` / `AssetInventory` flow and `AnalyzerInput`.
 - `NSPersistentCloudKitContainer.eventChangedNotification` as the way to observe SwiftData's CloudKit activity.
+- Liquid Glass: `glassEffect(_:in:)`, `Glass.regular.tint(_:).interactive()`, `GlassEffectContainer(spacing:)`, `.buttonStyle(.glass)`.
+- VisionKit `DataScannerViewController` (iOS 16+, `isSupported`/`isAvailable`, `RecognizedItem.barcode/.text`).
+- Vision `DetectBarcodesRequest` and `RecognizeTextRequest` (iOS 18 / macOS 15+, `perform(on:)`).
+- CoreImage `CIFilter.qrCodeGenerator()` with `message` and `correctionLevel`.
+- Foundation Models guided generation: `@Generable`, `@Guide(description:)`, `respond(to:generating:)`.
 
 Inferred and needing on-device testing:
 - That the Foundation Models API works inside a keyboard extension. An Apple engineer said the system model doesn't count toward an extension's memory limit, but that was about a different extension type.
 - That SwiftData still posts the CloudKit event notifications in iOS 26.
 - That opening the store read-only from the keyboard while the app syncs causes no history-tracking warnings.
 - The exact case names of `SystemLanguageModel.Availability.UnavailableReason`.
+- `BarcodeObservation.payloadString`, `RecognizedTextObservation.topCandidates(_:)` and `RecognizedItem.Barcode.payloadStringValue` property names.
+- That CoreImage has no EAN-13 generator (Typo encodes EAN-13 and UPC-A itself either way).
+- That `NSFileCoordinator`'s `.forUploading` option zips a folder on iOS (used for collection export).
+- That the bitmap read in `CodeGenerator.read` comes out top row first. If not, codes render mirrored, and the "presets scan" tests will fail.
+- That `CNContactViewController(forNewContact:)` works without asking for Contacts access.
 - Everything that only a compiler can confirm. Start with `Dictation.swift`, `SaveToTypoIntent.swift` and the toolbar in `LibraryView.swift`.
 
 ## Privacy
@@ -160,13 +203,35 @@ Inferred and needing on-device testing:
 - No analytics, tracking, accounts or third-party SDKs.
 - Network use: CloudKit (the user's own iCloud), link title fetches (a request to the saved link's own site), and image downloads when the user saves an image URL.
 - AI and speech run entirely on the device.
+- **Card vault:** card details stay in the user's iCloud Keychain. Typo has no field for the security code. Numbers are masked until unlocked, copies expire after 60 seconds and are kept off Universal Clipboard. On Mac, copies are marked concealed so clipboard managers skip them.
+- **Camera:** used only while scanning. Images are read on the device and are not kept unless the user saves the result.
+- **Clipboard history (Mac):** off by default, never synced, deleted after 7 days, and skips content marked concealed or transient by password managers.
+- **Guest Wi-Fi codes** contain the network password by design. The widget image lives in the App Group container on the device.
+- **Payment cards and PCI DSS (not legal advice):** the developer never receives card data. Even so, have a qualified adviser confirm the position, and the App Store privacy label, before launch.
 - The keyboard requests Full Access only so it can read the shared library and copy files. It makes no network calls and stores nothing the user types. Say this plainly on the App Store listing and in the keyboard setup screen.
 - iCloud data is stored by Apple under the user's Apple Account, so the developer holds no user data. Before release, have a privacy professional review the App Store privacy label and your privacy policy against the Australian Privacy Principles.
+
+## Tests
+
+`Tests/` holds Swift Testing suites, run on the Mac app with ⌘U on the `TypoMac` scheme:
+- Wi-Fi escaping and round trips (including `\ ; , : "`), vCard escaping, scanned-payload classification, and keeping the Wi-Fi password out of stored data.
+- Luhn checks against the networks' public test numbers, network detection, formatting, masking, expiry parsing, and reading OCR lines while ignoring the CVV.
+- EAN-13 and UPC-A check digits and patterns, QR matrix shape, and **every style preset rendered and then decoded by Vision**.
+- Collection ordering, counts, and that removing an item from a collection keeps it in the library.
+
+Manual checks on devices:
+1. Scan a guest Wi-Fi QR with the iPhone Camera app and with an Android phone, then join. Repeat with a password containing `;` and `:`.
+2. Vault: needs Face ID, relocks after backgrounding, cards absent from keyboard, widgets, search and Mac history. A copied number disappears after 60 s and doesn't reach the Mac.
+3. Scan a QR code, an EAN barcode, printed text and a business card.
+4. Build a collection from the share sheet (Safari link, Photos image, a video, a YouTube link) and check the board, the cover and the zip export.
+5. Mac: ⌥Space opens the panel from any app. History stays off until turned on. A password copied from the Passwords app does not appear in it.
 
 ## Next steps
 
 1. Get it compiling on Xcode 26, then test on an iPhone with Apple Intelligence turned on.
-2. Add a Mac share extension.
-3. Sync category colours through `NSUbiquitousKeyValueStore`. They are currently stored per device.
-4. Add unit tests for `Ingest` classification and for the `TypoLibrary` reorder and age-out logic.
-5. Move to Swift 6 language mode.
+2. Apple Watch app: member cards and the guest Wi-Fi QR on the wrist.
+3. Snippet templates with fill-in fields (`{name}`, `{date}`) and keyboard text expansion.
+4. Spotlight indexing and "Copy my …" Siri phrases for items.
+5. Shared collections with family or a team. CloudKit sharing needs Core Data rather than SwiftData.
+6. Mac share extension. Sync category hues through `NSUbiquitousKeyValueStore`.
+7. Move to Swift 6 language mode.

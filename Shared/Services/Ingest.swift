@@ -58,6 +58,8 @@ enum Ingest {
             kind = .gif
         } else if type.conforms(to: .image) {
             kind = .photo
+        } else if type.conforms(to: .movie) || type.conforms(to: .audiovisualContent) {
+            kind = .video
         } else {
             kind = .document
         }

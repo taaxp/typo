@@ -97,10 +97,15 @@ struct KeyboardRootView: View {
 private struct TypoGrid: View {
     let actions: KeyboardActions
     @Query(sort: \TypoItem.sortIndex, order: .reverse) private var items: [TypoItem]
+    @Query(sort: \TypoCollection.name) private var collections: [TypoCollection]
     @State private var kind: ItemKind?
+    @State private var collectionID: UUID?
 
     private var visible: [TypoItem] {
-        let filtered = kind.map { k in items.filter { $0.kind == k } } ?? items
+        var filtered = kind.map { k in items.filter { $0.kind == k } } ?? items
+        if let collectionID {
+            filtered = filtered.filter { ($0.collections ?? []).contains { $0.uuid == collectionID } }
+        }
         return filtered.filter(\.isPinned) + filtered.filter { !$0.isPinned }
     }
 
@@ -110,6 +115,8 @@ private struct TypoGrid: View {
                 HStack(spacing: 6) {
                     chip(nil, title: "All", hue: Hues.named("Fog"))
                     ForEach(ItemKind.allCases) { k in chip(k, title: k.shortTitle, hue: CategoryColours.hue(for: k)) }
+                    // Collections, e.g. "Steve Jobs", so a whole set is one tap away.
+                    ForEach(collections) { c in collectionChip(c) }
                 }
                 .padding(.horizontal, 10).padding(.vertical, 4)
             }
@@ -138,9 +145,26 @@ private struct TypoGrid: View {
         }
     }
 
+    private func collectionChip(_ c: TypoCollection) -> some View {
+        let on = collectionID == c.uuid
+        return Button { withAnimation(.smooth) { collectionID = on ? nil : c.uuid; kind = nil } } label: {
+            HStack(spacing: 5) {
+                if c.iconIsEmoji { Text(c.icon).font(.caption2) } else { Image(systemName: c.icon).font(.caption2) }
+                Text(c.name).font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(on ? c.hue.inkColor : .primary)
+            .padding(.horizontal, 11).padding(.vertical, 6)
+            .background(on ? AnyShapeStyle(c.hue.softGradient) : AnyShapeStyle(.thinMaterial), in: Capsule())
+            .overlay(Capsule().strokeBorder(.white.opacity(0.45), lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Collection \(c.name)")
+        .accessibilityAddTraits(on ? .isSelected : [])
+    }
+
     private func chip(_ k: ItemKind?, title: String, hue: Hue) -> some View {
-        let on = kind == k
-        return Button { withAnimation(.smooth) { kind = k } } label: {
+        let on = kind == k && (k != nil || collectionID == nil)
+        return Button { withAnimation(.smooth) { kind = k; if k == nil { collectionID = nil } } } label: {
             HStack(spacing: 5) {
                 HueDot(hue: hue, size: 8)
                 Text(title).font(.caption.weight(.semibold))

@@ -16,12 +16,14 @@ struct InboxManifest: Codable, Sendable {
     var typeIdentifier: String?
     var filename: String?
     var tagNames: [String] = []
+    /// Optional so manifests written by older versions still decode.
+    var collectionNames: [String]?
     var createdAt: Date = Date()
 }
 
 enum Inbox {
     /// Writes a pending save. Safe to call from any extension.
-    static func write(_ draft: IngestDraft, tagNames: [String] = []) throws {
+    static func write(_ draft: IngestDraft, tagNames: [String] = [], collectionNames: [String] = []) throws {
         let folder = AppGroup.inboxURL.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         if let data = draft.payload {
@@ -29,7 +31,7 @@ enum Inbox {
         }
         let manifest = InboxManifest(kind: draft.kind, title: draft.title, text: draft.text,
                                      typeIdentifier: draft.typeIdentifier, filename: draft.filename,
-                                     tagNames: tagNames)
+                                     tagNames: tagNames, collectionNames: collectionNames)
         // Manifest last: the importer ignores folders without one, so a half-written save is never imported.
         try JSONEncoder().encode(manifest).write(to: folder.appendingPathComponent("manifest.json"), options: .atomic)
     }

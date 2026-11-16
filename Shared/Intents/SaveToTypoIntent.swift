@@ -110,5 +110,8 @@ struct TypoShortcuts: AppShortcutsProvider {
         AppShortcut(intent: SaveToTypoIntent(),
                     phrases: ["Save to \(.applicationName)"],
                     shortTitle: "Save to Typo", systemImageName: "plus.square.on.square")
+        AppShortcut(intent: ShowCodeIntent(),
+                    phrases: ["Show my \(\.$code) in \(.applicationName)", "Show \(\.$code) from \(.applicationName)"],
+                    shortTitle: "Show Code", systemImageName: "qrcode")
     }
 }

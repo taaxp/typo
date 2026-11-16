@@ -13,6 +13,7 @@ struct DictateView: View {
     @State private var original: String?
     @State private var polishing: PolishStyle?
     @State private var tags: [Tag] = []
+    @State private var collections: [TypoCollection] = []
 
     var body: some View {
         ScrollView {
@@ -49,6 +50,8 @@ struct DictateView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Tags").font(.headline)
                     TagPicker(selection: $tags)
+                    Text("Collections").font(.headline).padding(.top, 6)
+                    CollectionPicker(selection: $collections)
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -169,7 +172,8 @@ struct DictateView: View {
     private func save() async {
         await dictation.stop()
         guard let snippet = Ingest.draft(fromText: draft) else { return }
-        TypoLibrary(context: context).save(snippet, tags: tags)
+        let item = TypoLibrary(context: context).save(snippet, tags: tags)
+        collections.forEach { CollectionLibrary(context: context).add([item], to: $0) }
         model.show("Saved")
         dismiss()
     }

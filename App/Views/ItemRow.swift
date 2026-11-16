@@ -5,6 +5,8 @@ import SwiftUI
 /// guidance recommends.
 struct ItemRow: View {
     let item: TypoItem
+    @Environment(AppModel.self) private var model
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         HStack(spacing: 14) {
@@ -22,6 +24,7 @@ struct ItemRow: View {
                     Text(subtitle).font(.footnote).foregroundStyle(.secondary).lineLimit(2)
                 }
                 if !item.sortedTags.isEmpty { TagChips(tags: item.sortedTags) }
+                if hasSuggestions { suggestions }
             }
             Spacer(minLength: 0)
             if !item.isReviewed {
@@ -37,13 +40,43 @@ struct ItemRow: View {
         .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
+    private var hasSuggestions: Bool {
+        !item.suggestedTags.isEmpty || !item.suggestedCollectionName.isEmpty
+    }
+
+    /// Apple Intelligence suggestions, shown as dashed chips. Tap to accept.
+    private var suggestions: some View {
+        HStack(spacing: 5) {
+            Image(systemName: "sparkles").font(.caption2).foregroundStyle(Hues.named("Dusk").gradient)
+            ForEach(item.suggestedTags, id: \.self) { name in
+                Text("+ \(name)").font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 7).padding(.vertical, 2)
+                    .overlay(Capsule().strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [3, 2])).foregroundStyle(.secondary))
+            }
+            if !item.suggestedCollectionName.isEmpty {
+                Label(item.suggestedCollectionName, systemImage: "square.stack.3d.up").font(.caption2.weight(.semibold))
+                    .padding(.horizontal, 7).padding(.vertical, 2)
+                    .overlay(Capsule().strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [3, 2])).foregroundStyle(.secondary))
+            }
+            Button("Add") { model.assistant.accept(item, context: context) }
+                .font(.caption2.weight(.bold)).buttonStyle(.plain).foregroundStyle(Hues.named("Dusk").inkColor)
+            Button { model.assistant.dismiss(item) } label: { Image(systemName: "xmark").font(.caption2) }
+                .buttonStyle(.plain).foregroundStyle(.secondary)
+                .accessibilityLabel("Dismiss suggestions")
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Suggested")
+    }
+
     private var subtitle: String? {
         switch item.kind {
         case .text:
             return item.title.isEmpty ? nil : item.text
         case .link:
             return URL(string: item.text)?.host() ?? item.text
-        case .photo, .gif, .document:
+        case .photo where !item.summary.isEmpty:
+            return item.summary
+        case .photo, .gif, .video, .document:
             let size = item.byteCount > 0 ? ByteCountFormatter.string(fromByteCount: Int64(item.byteCount), countStyle: .file) : nil
             let type = item.utType?.localizedDescription
             return [type, size].compactMap { $0 }.joined(separator: " · ")

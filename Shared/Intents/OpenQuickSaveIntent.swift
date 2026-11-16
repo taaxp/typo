@@ -22,9 +22,19 @@ struct OpenQuickSaveIntent: AppIntent {
 
 /// Deep-link destinations, used by intents (via shared defaults) and the `typo://` URL scheme.
 enum AppRoute: String {
+    // Sheets
     case quickSave = "quicksave"
     case dictate = "dictate"
     case sync = "sync"
+    case newCode = "newcode"
+    case newCollection = "newcollection"
+    // Full-screen camera (iPhone/iPad)
+    case scan = "scan"
+    // Sidebar destinations
+    case codes = "codes"
+    case vault = "vault"
+
+    var isSheet: Bool { [.quickSave, .dictate, .sync, .newCode, .newCollection].contains(self) }
 
     init?(url: URL) {
         guard url.scheme == "typo", let host = url.host() else { return nil }

@@ -8,6 +8,7 @@ struct QuickSaveView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @State private var tags: [Tag] = []
+    @State private var collections: [TypoCollection] = []
 
     var body: some View {
         ScrollView {
@@ -35,6 +36,14 @@ struct QuickSaveView: View {
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Add to collections").font(.headline)
+                    CollectionPicker(selection: $collections)
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
             }
             .padding(20)
         }
@@ -48,7 +57,8 @@ struct QuickSaveView: View {
     private func save(_ providers: [NSItemProvider]) async {
         let drafts = await Ingest.drafts(from: providers)
         guard !drafts.isEmpty else { model.show("Clipboard is empty"); return }
-        _ = TypoLibrary(context: context).save(drafts, tags: tags)
+        let saved = TypoLibrary(context: context).save(drafts, tags: tags)
+        collections.forEach { CollectionLibrary(context: context).add(saved, to: $0) }
         model.show(drafts.count == 1 ? "Saved" : "Saved \(drafts.count) items")
         dismiss()
     }

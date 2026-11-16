@@ -11,6 +11,7 @@ final class ShareViewController: UIViewController {
             .flatMap { $0.attachments ?? [] }
         let view = ShareView(providers: providers,
                              existingTags: Self.existingTagNames(),
+                             existingCollections: Self.existingCollections(),
                              finish: { [weak self] in self?.extensionContext?.completeRequest(returningItems: nil) },
                              cancel: { [weak self] in
                                  self?.extensionContext?.cancelRequest(withError: NSError(domain: NSCocoaErrorDomain, code: NSUserCancelledError))
@@ -30,17 +31,28 @@ final class ShareViewController: UIViewController {
         let tags = (try? ModelContext(container).fetch(FetchDescriptor<Tag>(sortBy: [SortDescriptor(\.name)]))) ?? []
         return tags.map { ($0.name, $0.hueName) }
     }
+
+    /// Collection names and hues, so a share can go straight into a collection.
+    @MainActor
+    private static func existingCollections() -> [(name: String, hue: String)] {
+        guard let container = try? TypoStore.makeContainer(role: .readOnly) else { return [] }
+        let items = (try? ModelContext(container).fetch(FetchDescriptor<TypoCollection>(sortBy: [SortDescriptor(\.name)]))) ?? []
+        return items.map { ($0.name, $0.hueName) }
+    }
 }
 
 private struct ShareView: View {
     let providers: [NSItemProvider]
     let existingTags: [(name: String, hue: String)]
+    let existingCollections: [(name: String, hue: String)]
     let finish: () -> Void
     let cancel: () -> Void
 
     @State private var drafts: [IngestDraft] = []
     @State private var loading = true
     @State private var selectedTags: Set<String> = []
+    @State private var selectedCollections: Set<String> = []
+    @State private var newCollection = ""
     @State private var newTag = ""
     @State private var error: String?
 
@@ -73,6 +85,21 @@ private struct ShareView: View {
                     }
                     TextField("New tag", text: $newTag)
                 }
+                Section("Collection") {
+                    ForEach(existingCollections, id: \.name) { c in
+                        Button {
+                            if selectedCollections.contains(c.name) { selectedCollections.remove(c.name) } else { selectedCollections.insert(c.name) }
+                        } label: {
+                            HStack {
+                                HueDot(hue: Hues.named(c.hue), size: 12)
+                                Text(c.name).foregroundStyle(.primary)
+                                Spacer()
+                                if selectedCollections.contains(c.name) { Image(systemName: "checkmark") }
+                            }
+                        }
+                    }
+                    TextField("New collection", text: $newCollection)
+                }
             }
             .navigationTitle("Typo")
             .navigationBarTitleDisplayMode(.inline)
@@ -94,7 +121,7 @@ private struct ShareView: View {
         switch draft.kind {
         case .text: draft.text
         case .link: draft.text
-        case .photo, .gif, .document:
+        case .photo, .gif, .video, .document:
             "\(draft.filename ?? draft.kind.title) · \(ByteCountFormatter.string(fromByteCount: Int64(draft.payload?.count ?? 0), countStyle: .file))"
         }
     }
@@ -104,7 +131,10 @@ private struct ShareView: View {
         let typed = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
         if !typed.isEmpty { tags.append(typed) }
         do {
-            for draft in drafts { try Inbox.write(draft, tagNames: tags) }
+            var collections = Array(selectedCollections)
+            let typedCollection = newCollection.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !typedCollection.isEmpty { collections.append(typedCollection) }
+            for draft in drafts { try Inbox.write(draft, tagNames: tags, collectionNames: collections) }
             Inbox.notifyApp()
             finish()
         } catch {

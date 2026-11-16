@@ -14,7 +14,7 @@ import SwiftData
 enum TypoStore {
     enum Role { case app, readOnly }
 
-    static let schema = Schema([TypoItem.self, Tag.self])
+    static let schema = Schema([TypoItem.self, Tag.self, TypoCollection.self, CodeItem.self])
 
     static func makeContainer(role: Role) throws -> ModelContainer {
         let config: ModelConfiguration

@@ -52,6 +52,7 @@ enum AppGroup {
     /// Keys in `defaults`.
     enum Key {
         static let pendingRoute = "pendingRoute"          // set by intents/controls, read by the app
+        static let pendingCodeID = "pendingCodeID"        // set by ShowCodeIntent
         static let recentsAgeOutDays = "recentsAgeOutDays"
         static let lastExport = "sync.lastExport"
         static let lastImport = "sync.lastImport"

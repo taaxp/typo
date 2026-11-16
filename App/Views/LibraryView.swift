@@ -7,6 +7,8 @@ enum LibraryFilter: Hashable {
     case recents, all, pinned
     case kind(ItemKind)
     case tag(Tag)
+    case collection(TypoCollection)
+    case codes, vault
 
     var title: String {
         switch self {
@@ -15,6 +17,9 @@ enum LibraryFilter: Hashable {
         case .pinned: "Pinned"
         case .kind(let kind): kind.title
         case .tag(let tag): tag.name
+        case .collection(let c): c.name
+        case .codes: "Codes"
+        case .vault: "Vault"
         }
     }
 
@@ -28,28 +33,59 @@ enum LibraryFilter: Hashable {
             let hue = CategoryColours.hue(for: kind)
             return [hue, Hues.named("Mist"), hue]
         case .tag(let tag): [tag.hue, Hues.named("Mist"), tag.hue]
+        case .collection(let c): [c.hue, Hues.named("Mist"), c.hue]
+        case .codes: [Hues.named("Lagoon"), Hues.named("Mist"), Hues.named("Amber")]
+        case .vault: [Hues.named("Fog"), Hues.named("Ocean"), Hues.named("Dusk")]
         }
     }
 }
 
 struct LibraryView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.modelContext) private var context
     @Query(sort: \Tag.name) private var tags: [Tag]
-    @State private var filter: LibraryFilter? = .recents
+    @Query(sort: \TypoCollection.name) private var collections: [TypoCollection]
     @State private var showSettings = false
 
+    private var orderedCollections: [TypoCollection] {
+        collections.filter(\.isPinned) + collections.filter { !$0.isPinned }
+    }
+
     var body: some View {
+        @Bindable var model = model
         NavigationSplitView {
-            List(selection: $filter) {
+            List(selection: $model.filter) {
                 Section {
                     sidebarRow(.recents, symbol: "clock.fill", hue: Hues.named("Ocean"))
                     sidebarRow(.all, symbol: "tray.full.fill", hue: Hues.named("Fog"))
                     sidebarRow(.pinned, symbol: "pin.fill", hue: Hues.named("Amber"))
                 }
+                Section {
+                    ForEach(orderedCollections) { c in
+                        HStack(spacing: 10) {
+                            CollectionCover(collection: c, items: CollectionLibrary(context: context).coverItems(c, limit: 1), height: 26)
+                                .frame(width: 26)
+                            Text(c.name)
+                            Spacer()
+                            Text("\(c.count)").font(.caption).foregroundStyle(.tertiary).monospacedDigit()
+                        }
+                        .tag(LibraryFilter.collection(c))
+                    }
+                    Button { model.open(.newCollection) } label: {
+                        Label("New Collection", systemImage: "plus")
+                    }
+                    .foregroundStyle(.secondary)
+                } header: {
+                    Text("Collections")
+                }
                 Section("Categories") {
                     ForEach(ItemKind.allCases) { kind in
                         sidebarRow(.kind(kind), symbol: kind.symbol, hue: CategoryColours.hue(for: kind))
                     }
+                }
+                Section("Tools") {
+                    sidebarRow(.codes, symbol: "qrcode", hue: Hues.named("Lagoon"))
+                    sidebarRow(.vault, symbol: "lock.fill", hue: Hues.named("Fog"))
                 }
                 if !tags.isEmpty {
                     Section("Tags") {
@@ -76,7 +112,12 @@ struct LibraryView: View {
             .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() } }
             #endif
         } detail: {
-            ItemListView(filter: filter ?? .all)
+            switch model.filter ?? .all {
+            case .codes: NavigationStack { CodesView() }
+            case .vault: NavigationStack { VaultView() }
+            case .collection(let c): NavigationStack { CollectionBoardView(collection: c) }
+            case let other: ItemListView(filter: other)
+            }
         }
     }
 
@@ -105,6 +146,9 @@ struct ItemListView: View {
     @State private var imageURLText = ""
     @State private var showFileImporter = false
     @State private var dropTargeted = false
+    @State private var qrDraft: CodeDraft?
+    @State private var newCollectionFor: TypoItem?
+    @Query(sort: \TypoCollection.name) private var collections: [TypoCollection]
     #if os(iOS)
     @State private var editMode: EditMode = .inactive
     #endif
@@ -120,6 +164,8 @@ struct ItemListView: View {
             case .pinned: item.isPinned
             case .kind(let kind): item.kind == kind
             case .tag(let tag): (item.tags ?? []).contains(tag)
+            case .collection(let c): (item.collections ?? []).contains(c)
+            case .codes, .vault: false
             }
         }
         let searched = search.isEmpty ? filtered : filtered.filter { $0.searchableText.localizedStandardContains(search) }
@@ -201,6 +247,12 @@ struct ItemListView: View {
         .toolbar { toolbar }
         .onCopyCommandIfAvailable { selectedItems.map(dragProvider(for:)) }
         .sheet(item: $editing) { item in NavigationStack { ItemDetailView(item: item) } }
+        .sheet(item: $qrDraft) { draft in NavigationStack { QRStudioView(draft: draft) } }
+        .sheet(item: $newCollectionFor) { item in
+            NavigationStack {
+                CollectionEditor(collection: nil) { CollectionLibrary(context: context).add([item], to: $0) }
+            }
+        }
         .alert("Rename", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
             TextField("Name", text: $renameText)
             Button("Save") { if let renaming { library.rename(renaming, to: renameText) } }
@@ -249,7 +301,7 @@ struct ItemListView: View {
                     .buttonBorderShape(.capsule)
                     .tint(Hues.named("Ocean").base)
 
-                    Button { model.route = .dictate } label: {
+                    Button { model.open(.dictate) } label: {
                         Image(systemName: "mic.fill")
                             .font(.title3.weight(.semibold))
                             .foregroundStyle(.white)
@@ -260,11 +312,19 @@ struct ItemListView: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dictate")
 
-                    Button { model.route = .quickSave } label: {
+                    #if os(iOS)
+                    Button { model.open(.scan) } label: {
+                        Image(systemName: "qrcode.viewfinder").font(.title3).frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Scan")
+                    #else
+                    Button { model.open(.quickSave) } label: {
                         Image(systemName: "tag.fill").font(.title3).frame(width: 44, height: 44)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Quick Save with tags")
+                    #endif
 
                     addMenu
                 }
@@ -277,13 +337,19 @@ struct ItemListView: View {
 
     private var addMenu: some View {
         Menu {
+            Button("Quick Save with Tags…", systemImage: "tag") { model.open(.quickSave) }
+            Button("New QR Code…", systemImage: "qrcode") { model.open(.newCode) }
+            Button("Add Member Card…", systemImage: "barcode") { model.open(.codes) }
+            Button("Add Bank Card…", systemImage: "creditcard") { model.open(.vault) }
+            Button("New Collection…", systemImage: "square.stack.3d.up") { model.open(.newCollection) }
+            Divider()
             Button("Photo or GIF from URL…", systemImage: "photo.badge.arrow.down") {
                 imageURLText = ""
                 showImageURLPrompt = true
             }
             Button("Import Files…", systemImage: "doc.badge.plus") { showFileImporter = true }
             Divider()
-            Button("Sync Status", systemImage: "icloud") { model.route = .sync }
+            Button("Sync Status", systemImage: "icloud") { model.open(.sync) }
         } label: {
             Image(systemName: "ellipsis").font(.title3.weight(.semibold)).frame(width: 44, height: 44)
         }
@@ -335,6 +401,26 @@ struct ItemListView: View {
                 renaming = item
             }
             Button("Edit Tags and Details…", systemImage: "tag") { editing = item }
+            Menu("Add to Collection", systemImage: "square.stack.3d.up") {
+                ForEach(collections) { c in
+                    let isIn = (item.collections ?? []).contains(c)
+                    Button(c.name, systemImage: isIn ? "checkmark" : "square.stack") {
+                        CollectionLibrary(context: context).toggle(item, in: c)
+                        model.show(isIn ? "Removed from \(c.name)" : "Added to \(c.name)")
+                    }
+                }
+                Divider()
+                Button("New Collection…", systemImage: "plus") { newCollectionFor = item }
+            }
+            if item.kind.isInsertableAsText {
+                Button("Show as QR Code", systemImage: "qrcode") {
+                    var draft = CodeDraft()
+                    draft.type = item.kind == .link ? .link : .text
+                    draft.text = item.text
+                    draft.title = item.displayTitle
+                    qrDraft = draft
+                }
+            }
             if let url = TempFiles.url(for: item) {
                 ShareLink(item: url)
             } else if item.kind.isInsertableAsText {

@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 /// The five fixed categories.
 enum ItemKind: String, CaseIterable, Codable, Identifiable, Sendable {
-    case text, link, photo, gif, document
+    case text, link, photo, gif, video, document
 
     var id: String { rawValue }
 
@@ -14,6 +14,7 @@ enum ItemKind: String, CaseIterable, Codable, Identifiable, Sendable {
         case .link: "Links"
         case .photo: "Photos"
         case .gif: "GIFs"
+        case .video: "Videos"
         case .document: "Documents"
         }
     }
@@ -24,6 +25,7 @@ enum ItemKind: String, CaseIterable, Codable, Identifiable, Sendable {
         case .link: "Links"
         case .photo: "Photos"
         case .gif: "GIFs"
+        case .video: "Videos"
         case .document: "Docs"
         }
     }
@@ -34,6 +36,7 @@ enum ItemKind: String, CaseIterable, Codable, Identifiable, Sendable {
         case .link: "link"
         case .photo: "photo"
         case .gif: "sparkles.rectangle.stack"
+        case .video: "play.rectangle"
         case .document: "doc"
         }
     }
@@ -45,6 +48,7 @@ enum ItemKind: String, CaseIterable, Codable, Identifiable, Sendable {
         case .link: "Lagoon"
         case .photo: "Amber"
         case .gif: "Blush"
+        case .video: "Plum"
         case .document: "Fog"
         }
     }
@@ -89,6 +93,21 @@ final class TypoItem {
     @Relationship(deleteRule: .nullify, inverse: \Tag.items)
     var tags: [Tag]? = []
 
+    /// Collections this item belongs to (an item can be in several).
+    var collections: [TypoCollection]? = []
+
+    // MARK: Assistant (on-device AI and Vision)
+
+    /// Text read from photos and screenshots with Vision, for search.
+    var recognisedText: String = ""
+    /// One-sentence summary of long text (Apple Intelligence).
+    var summary: String = ""
+    /// Suggested existing tag names, newline-separated (CloudKit-safe).
+    var suggestedTagNames: String = ""
+    /// Suggested collection name, if any.
+    var suggestedCollectionName: String = ""
+    var assistantDone: Bool = false
+
     init(kind: ItemKind, title: String = "", text: String = "") {
         self.kindRaw = kind.rawValue
         self.title = title
@@ -102,6 +121,12 @@ final class TypoItem {
 
     var url: URL? { kind == .link ? URL(string: text) : nil }
 
+    /// YouTube links get a play badge on boards.
+    var isVideoLink: Bool {
+        guard let host = url?.host()?.lowercased() else { return false }
+        return host.hasSuffix("youtube.com") || host == "youtu.be" || host.hasSuffix("vimeo.com")
+    }
+
     var utType: UTType? { typeIdentifier.flatMap(UTType.init) }
 
     /// What to show in a list row.
@@ -110,7 +135,7 @@ final class TypoItem {
         switch kind {
         case .text: return text.split(separator: "\n").first.map(String.init) ?? "Empty snippet"
         case .link: return url?.host() ?? text
-        case .photo, .gif, .document: return filename ?? kind.title
+        case .photo, .gif, .video, .document: return filename ?? kind.title
         }
     }
 
@@ -118,10 +143,14 @@ final class TypoItem {
 
     /// Lower-cased haystack for search.
     var searchableText: String {
-        ([title, text, filename ?? ""] + (tags ?? []).map(\.name)).joined(separator: " ")
+        ([title, text, filename ?? "", recognisedText, summary] + (tags ?? []).map(\.name)).joined(separator: " ")
     }
 
     func touch() { modifiedAt = Date() }
+
+    var suggestedTags: [String] {
+        suggestedTagNames.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
+    }
 }
 
 /// A user-defined tag with a named gradient hue.

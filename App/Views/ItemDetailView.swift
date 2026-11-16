@@ -43,7 +43,7 @@ struct ItemDetailView: View {
                         #endif
                     if let url = item.url { Link("Open in Browser", destination: url) }
                 }
-            case .photo, .gif, .document:
+            case .photo, .gif, .video, .document:
                 Section("File") {
                     if let data = item.thumbnail, let image = PlatformImage.from(data) {
                         image.resizable().scaledToFit().frame(maxHeight: 220).frame(maxWidth: .infinity)
@@ -52,6 +52,47 @@ struct ItemDetailView: View {
                     LabeledContent("Type", value: item.utType?.localizedDescription ?? "Unknown")
                     Button("Quick Look", systemImage: "eye") { previewURL = TempFiles.url(for: item) }
                 }
+            }
+
+            if !item.summary.isEmpty {
+                Section {
+                    Text(item.summary)
+                } header: {
+                    Label("Summary", systemImage: "sparkles")
+                }
+            }
+
+            let actions = DataAction.detect(in: [item.text, item.recognisedText].joined(separator: "\n"))
+            if !actions.isEmpty {
+                Section("Quick actions") {
+                    ForEach(actions) { action in
+                        if let url = action.url {
+                            Link(destination: url) { Label(action.title, systemImage: action.symbol) }
+                        } else {
+                            Button(action.title, systemImage: action.symbol) {
+                                Clipboard.copy(text: action.title)
+                                model.show("Copied date")
+                            }
+                        }
+                    }
+                }
+            }
+
+            if !item.recognisedText.isEmpty {
+                Section("Text in image") {
+                    Text(item.recognisedText).font(.callout).textSelection(.enabled)
+                }
+            }
+
+            Section("Collections") {
+                CollectionPicker(selection: Binding(
+                    get: { item.collections ?? [] },
+                    set: { newValue in
+                        let library = CollectionLibrary(context: context)
+                        let old = item.collections ?? []
+                        for c in newValue where !old.contains(c) { library.add([item], to: c) }
+                        for c in old where !newValue.contains(c) { library.remove([item], from: c) }
+                    }))
             }
 
             Section("Tags") {

@@ -126,6 +126,49 @@
   .sw .g::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 55%)}
   .sw b{font-size:17px;letter-spacing:-.2px}
   .sw small{font-size:11px;color:var(--sec);font-family:"JetBrains Mono",monospace}
+
+  /* round 2 */
+  .qrcard{width:230px;height:230px}
+  .qrcard.big{width:280px;height:280px}
+  .frow{display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid rgba(0,0,0,.08);font-size:15px}
+  .frow span{color:var(--sec)}
+  .tchip{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:18px;font-size:13px;font-weight:600}
+  .camera{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,#6b6152 0,#3b3631 45%,#1d1f22 80%)}
+  .camera::after{content:"";position:absolute;left:120px;top:302px;width:146px;height:146px;background:repeating-linear-gradient(90deg,#f4f1ea 0 9px,#222 9px 18px),#f4f1ea;opacity:.85;border-radius:6px;
+    mask:repeating-linear-gradient(0deg,#000 0 9px,transparent 9px 14px)}
+  .hl{position:absolute;border:3px solid #FFD54A;border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.25);z-index:2}
+  .scanpanel{position:absolute;left:14px;right:14px;bottom:36px;border-radius:28px;padding:14px;z-index:3}
+  .srow{display:flex;align-items:center;gap:10px;font-size:14.5px}
+  .sacts{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+  .sact{font-size:12.5px;font-weight:600;padding:7px 11px;border-radius:16px;color:#4B63E6;white-space:nowrap}
+  .paycard{margin:6px 16px 0;height:200px;border-radius:26px;padding:20px 22px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;
+    box-shadow:0 16px 30px rgba(75,99,230,.3);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.5)}
+  .paycard::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 45%)}
+  .paycard>*{position:relative}
+  .paycard small{font-size:10px;font-weight:600;opacity:.75;letter-spacing:.5px}
+  .pnum{font-family:"JetBrains Mono",monospace;font-size:24px;font-weight:600;letter-spacing:1px}
+  .board{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}
+  .bcol{display:flex;flex-direction:column;gap:10px}
+  .bq{border-radius:20px;padding:13px;background:linear-gradient(135deg,rgba(143,184,255,.5),rgba(75,99,230,.25)),rgba(255,255,255,.6);font-family:Georgia,serif;font-size:15.5px;line-height:1.3;
+    border:.5px solid rgba(255,255,255,.7);box-shadow:0 6px 16px rgba(30,30,90,.08)}
+  .bq small{display:block;font-family:Inter;font-size:11px;font-weight:600;color:#213A9E;margin-top:6px}
+  .bimg{border-radius:20px;position:relative;box-shadow:0 6px 16px rgba(30,30,90,.12);display:flex;align-items:center;justify-content:center}
+  .playb{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.25)}
+  .gifb2{position:absolute;left:8px;bottom:8px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:9px;background:rgba(255,255,255,.55)}
+  .blink{border-radius:20px;overflow:hidden;background:rgba(255,255,255,.7);box-shadow:0 6px 16px rgba(30,30,90,.08);font-size:13px}
+  .blink b{display:block;padding:8px 10px 0}
+  .blink small{display:block;padding:2px 10px 10px;color:var(--sec);font-size:11px}
+  .bthumb{height:70px;display:flex;align-items:center;justify-content:center}
+  .ytb{width:40px;height:28px;border-radius:9px;background:#E31B1B;display:flex;align-items:center;justify-content:center}
+  .qp{position:absolute;left:60px;top:60px;width:620px;border-radius:24px;padding:12px}
+  .qsearch{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;font-size:18px;margin-bottom:6px}
+  .qsec{font-size:11px;font-weight:600;color:var(--sec);padding:10px 10px 4px}
+  .qrow{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;font-size:13.5px}
+  .qrow small{color:var(--sec);font-size:11.5px}
+  .qrow.sel{background:rgba(75,99,230,.16)}
+  .kbd{font-size:11px;color:var(--ter);font-family:"JetBrains Mono",monospace}
+  .aicard{position:absolute;right:56px;top:150px;width:400px;border-radius:22px;padding:14px}
+  .dash{border:1px dashed #9a9aa6;border-radius:10px;padding:2px 7px;color:#444}
 </style>
 </head>
 <body>
@@ -312,6 +355,153 @@
   <div class="pgrid" data-palette></div>
 </div></div>
 
+<!-- 10. QR studio -->
+<div class="shot"><div class="phone" id="studio">
+  <div class="amb"><i style="width:360px;height:360px;left:-60px;top:-40px;background:linear-gradient(135deg,#B7D3B0,#6FA287)"></i><i style="width:320px;height:320px;right:-90px;top:300px;background:linear-gradient(135deg,#D5E9F6,#8DBBDD)"></i></div>
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+  <div class="topbar"><div class="gcirc glass" data-icon="xmark"></div><div class="disp" style="font-weight:700;font-size:17px">New QR Code</div><div class="gcirc glass" data-icon="check"></div></div>
+  <div class="panel mat" style="text-align:center;padding:16px;margin-top:4px">
+    <div class="qrcard" data-qr="sage" style="margin:0 auto"></div>
+    <div class="pchip glass" style="margin-top:10px;background:rgba(111,162,135,.18);color:#2E5B47"><span data-icon="seal"></span>Scans</div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:7px;padding:0 18px 10px" data-types></div>
+  <div class="panel mat" style="padding:14px 16px">
+    <div class="frow">Network<span>Lighthouse Guest</span></div>
+    <div class="frow">Password<span>•••••••••••</span></div>
+    <div class="frow" style="border:0">Security<span>WPA2 / WPA3</span></div>
+  </div>
+  <div class="panel mat" style="padding:12px 14px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:8px">Style</div>
+    <div style="display:flex;gap:10px" data-presets></div>
+  </div>
+  <div class="home"></div>
+</div><div class="caption">QR studio. Pick a type, then decorate: dots, eyes, a hue, a centre badge and a caption. Typo checks it still scans.</div></div>
+
+<!-- 11. Guest Wi-Fi present -->
+<div class="shot"><div class="phone" id="wifi">
+  <div class="amb" style="opacity:.7"><i style="width:380px;height:380px;left:-80px;top:-40px;background:linear-gradient(135deg,#B7D3B0,#6FA287)"></i><i style="width:360px;height:360px;right:-100px;bottom:40px;background:linear-gradient(135deg,#8EE3E0,#2F9FB4)"></i></div>
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+  <div style="display:flex;justify-content:flex-end;padding:4px 16px"><div class="gcirc glass" data-icon="xmark"></div></div>
+  <div class="disp" style="text-align:center;font-size:32px;font-weight:700;letter-spacing:-.6px;margin:6px 0 18px">Guest Wi-Fi</div>
+  <div style="margin:0 34px;background:#fff;border-radius:36px;padding:20px;box-shadow:0 20px 50px rgba(111,162,135,.35)">
+    <div class="qrcard big" data-qr="sagecap" style="margin:0 auto"></div>
+  </div>
+  <div style="text-align:center;color:var(--sec);font-weight:600;margin:22px 0 10px">Point your camera at the code to join</div>
+  <div class="glass" style="margin:0 30px;border-radius:24px;padding:12px 16px;display:flex;justify-content:center;gap:10px;align-items:center;font-weight:600;font-size:16px;white-space:nowrap">
+    <span data-icon="wifi"></span>Lighthouse Guest <span style="color:var(--sec)">·</span><span style="font-family:'JetBrains Mono',monospace">••••••••</span></div>
+  <div class="home"></div>
+</div><div class="caption">Present mode turns the brightness up. Guests scan with their camera and join. The password stays in your iCloud Keychain.</div></div>
+
+<!-- 12. Scan -->
+<div class="shot"><div class="phone" id="scan" style="background:#1d1f22">
+  <div class="camera"></div>
+  <div class="island"></div>
+  <div class="status" style="color:#fff"><span>9:41</span><span data-icon="status" style="filter:invert(1)"></span></div>
+  <div class="topbar"><div class="gcirc glass" data-icon="xmark" style="color:#fff"></div>
+    <div class="seg glass" style="color:#fff"><div class="on" style="width:110px">Codes &amp; Text</div><div style="width:110px">Business Card</div></div></div>
+  <div class="hl" style="left:118px;top:300px;width:150px;height:150px"></div>
+  <div class="scanpanel mat">
+    <div class="srow"><div data-tile="Lagoon|wifi|32"></div><b>Wi-Fi: Cafe Guest</b></div>
+    <div class="sacts"><span class="sact glass">Save Wi-Fi</span><span class="sact glass">Copy password</span><span class="sact glass">Copy</span></div>
+    <div class="srow" style="margin-top:12px"><div data-tile="Lagoon|barcode|32"></div><b>EAN-13: 4006381333931</b></div>
+    <div class="sacts"><span class="sact glass">Save as member card</span><span class="sact glass">Save</span><span class="sact glass">Copy</span></div>
+  </div>
+  <div class="home" style="background:#fff"></div>
+</div><div class="caption">Scan anything. Typo routes each result: Wi-Fi codes, links, contacts, barcodes for member cards, printed text and business cards.</div></div>
+
+<!-- 13. Vault -->
+<div class="shot"><div class="phone" id="vault">
+  <div class="amb"><i style="width:360px;height:360px;left:-60px;top:-40px;background:linear-gradient(135deg,#D7DCE3,#8D97A6)"></i><i style="width:340px;height:340px;right:-90px;top:300px;background:linear-gradient(135deg,#8FB8FF,#4B63E6)"></i></div>
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+  <div class="topbar"><div class="gcirc glass" data-icon="back"></div><div class="gpair glass"><span data-icon="plus2"></span><span data-icon="lockc"></span></div></div>
+  <div class="large disp">Vault</div>
+  <div class="paycard" style="background:linear-gradient(135deg,#8FB8FF,#4B63E6)">
+    <div style="display:flex;justify-content:space-between"><b>Everyday</b><b style="opacity:.85">Visa</b></div>
+    <div class="pnum">•••• 1111</div>
+    <div style="display:flex;justify-content:space-between"><div><small>CARDHOLDER</small><br><b>ALEX EXAMPLE</b></div><div style="text-align:right"><small>EXPIRES</small><br><b>09/28</b></div></div>
+  </div>
+  <div style="display:flex;gap:8px;padding:10px 16px 0 16px"><span class="sact glass">Number</span><span class="sact glass">Expiry</span><span class="sact glass">Name</span><span class="sact glass">•••</span></div>
+  <div class="paycard" style="background:linear-gradient(135deg,#C7B6F2,#7C6AD6);margin-top:16px">
+    <div style="display:flex;justify-content:space-between"><b>Travel</b><b style="opacity:.85">Mastercard</b></div>
+    <div class="pnum">•••• 4444</div>
+    <div style="display:flex;justify-content:space-between"><div><small>CARDHOLDER</small><br><b>ALEX EXAMPLE</b></div><div style="text-align:right"><small>EXPIRES</small><br><b>03/29</b></div></div>
+  </div>
+  <div style="font-size:12px;color:var(--sec);padding:14px 22px;line-height:1.4;display:flex;gap:6px"><span data-icon="lock"></span><span>Kept in your iCloud Keychain behind Face ID. Typo never saves security codes. Copied numbers clear after 60 seconds.</span></div>
+  <div class="home"></div>
+</div><div class="caption">Card vault. Unlock with Face ID, tap a card to reveal it, and copy the number, expiry or name. No CVV, ever. Card numbers shown are public test numbers.</div></div>
+
+<!-- 14. Member card -->
+<div class="shot"><div class="phone" id="member">
+  <div class="amb" style="opacity:.6"><i style="width:380px;height:380px;left:-60px;top:-40px;background:linear-gradient(135deg,#FFD99A,#F0A044)"></i><i style="width:320px;height:320px;right:-90px;bottom:60px;background:linear-gradient(135deg,#FFC1A8,#F2766A)"></i></div>
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+  <div style="display:flex;justify-content:flex-end;padding:4px 16px"><div class="gcirc glass" data-icon="xmark"></div></div>
+  <div class="disp" style="text-align:center;font-size:32px;font-weight:700;letter-spacing:-.6px;margin:30px 0 26px">Gym membership</div>
+  <div style="margin:0 24px;background:#fff;border-radius:32px;padding:26px 20px 18px;box-shadow:0 20px 50px rgba(240,160,68,.3)">
+    <div data-barcode style="height:120px"></div>
+    <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:600;font-size:20px;letter-spacing:3px;margin-top:10px">4006381333931</div>
+  </div>
+  <div style="text-align:center;margin-top:26px;font-size:14px;color:var(--sec)">Brightness turned up for the scanner</div>
+  <div class="glass" style="margin:18px auto 0;width:max-content;border-radius:20px;padding:10px 16px;font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center"><span data-icon="siri"></span>"Show my gym card"</div>
+  <div class="home"></div>
+</div><div class="caption">Member and loyalty cards: full screen at checkout, on the widget, or open with Siri.</div></div>
+
+<!-- 15. Collection board -->
+<div class="shot"><div class="phone" id="collection">
+  <div class="amb"><i style="width:360px;height:360px;left:-60px;top:-40px;background:linear-gradient(135deg,#D7DCE3,#8D97A6)"></i><i style="width:340px;height:340px;right:-90px;top:320px;background:linear-gradient(135deg,#C7B6F2,#7C6AD6)"></i></div>
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span data-icon="status"></span></div>
+  <div class="topbar"><div class="gcirc glass" data-icon="back"></div><div class="gcirc glass" data-icon="ellipsis"></div></div>
+  <div style="margin:0 16px;height:132px;border-radius:22px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;box-shadow:0 10px 24px rgba(30,30,90,.15)">
+    <div style="grid-row:1/3;background:linear-gradient(160deg,#3a3a40,#15151a)"></div>
+    <div style="background:linear-gradient(135deg,#D7DCE3,#8D97A6)"></div>
+    <div style="background:linear-gradient(135deg,#232327,#55565c)"></div>
+  </div>
+  <div style="display:flex;align-items:baseline;justify-content:space-between;padding:12px 20px 0"><div class="disp" style="font-size:30px;font-weight:700;letter-spacing:-.6px">Steve Jobs</div><span style="color:var(--sec);font-weight:600">9</span></div>
+  <div style="padding:2px 20px 10px;font-size:12.5px;font-weight:500;color:#3F318F">3 quotes and notes · 2 photos · 1 video · 2 links · 1 GIF</div>
+  <div class="board">
+    <div class="bcol">
+      <div class="bq"><span data-icon="qopen"></span><div>Stay hungry. Stay foolish.</div><small>— Stanford, 2005</small></div>
+      <div class="bimg" style="height:120px;background:linear-gradient(160deg,#3a3a40,#15151a)"><span class="playb glass" data-icon="playw"></span></div>
+      <div class="blink"><div class="bthumb" style="background:linear-gradient(135deg,#7FB3E8,#3D6FB5)"><span class="ytb" data-icon="playw"></span></div><b>Stanford commencement speech</b><small>youtube.com</small></div>
+    </div>
+    <div class="bcol">
+      <div class="bimg" style="height:96px;background:linear-gradient(135deg,#D7DCE3,#8D97A6)"></div>
+      <div class="bq" style="background:linear-gradient(135deg,rgba(199,182,242,.55),rgba(124,106,214,.3)),rgba(255,255,255,.6)"><span data-icon="qopen"></span><div>Design is not just what it looks like and feels like. Design is how it works.</div></div>
+      <div class="bimg" style="height:80px;background:radial-gradient(circle at 40% 40%,#FFE08A 0 26%,#F7B24A 27% 42%,#9C5BAF 43%)"><span class="gifb2 glass">GIF</span></div>
+    </div>
+  </div>
+  <div class="dock glass" style="bottom:28px"><div class="paste" style="background:#7C6AD6"><span data-icon="pastewhite"></span>Paste</div><div class="gbtn glass" style="height:44px;font-size:15px;white-space:nowrap">Add Items</div></div>
+  <div class="home"></div>
+</div><div class="caption">Collections hold any mix of items. Quotes become cards, photos and videos become tiles, and links show their preview image, with a play badge for YouTube.</div></div>
+
+<!-- 16. AI suggestions + Mac quick panel -->
+<div class="shot" style="width:100%"><div class="mac" id="quickpanel" style="height:560px;background:linear-gradient(135deg,#dfe6f3,#efe6f6)">
+  <div class="amb" style="opacity:.5"><i style="width:520px;height:520px;left:100px;top:-200px;background:linear-gradient(135deg,#8FB8FF,#4B63E6)"></i><i style="width:480px;height:480px;right:0;bottom:-200px;background:linear-gradient(135deg,#C7B6F2,#7C6AD6)"></i></div>
+  <div class="qp mat">
+    <div class="qsearch glass"><span data-icon="search"></span><span style="flex:1;color:#222">wifi</span><span style="font-size:11px;color:var(--ter)">↩ copy · ⌘1–9 · ⌘S save · esc</span></div>
+    <div class="qsec">Library</div>
+    <div class="qrow sel"><div data-tile="Sage|wifi|28"></div><div style="flex:1"><div>Guest Wi-Fi details for visitors</div><small>Network: Lighthouse Guest. Ask at reception for…</small></div><span class="kbd">⌘1</span></div>
+    <div class="qrow"><div data-tile="Ocean|text|28"></div><div style="flex:1"><div>Office Wi-Fi instructions</div><small>Connect to "Office" and sign in with your staff ID…</small></div><span class="kbd">⌘2</span></div>
+    <div class="qsec">Clipboard history</div>
+    <div class="qrow"><div data-tile="Fog|clock|28"></div><div style="flex:1"><div>Wi-Fi is down on level 3, IT is on it</div><small>Slack · 4 min ago</small></div><span class="kbd">⌘3</span></div>
+    <div class="qrow"><div data-tile="Fog|clock|28"></div><div style="flex:1"><div>https://support.example.com/wifi-setup</div><small>Safari · 1 hr ago</small></div><span class="kbd">⌘4</span></div>
+  </div>
+  <div class="aicard mat">
+    <div style="display:flex;gap:12px;align-items:center">
+      <div data-tile="Ocean|text|44"></div>
+      <div style="flex:1"><div style="font-weight:600">Design is how it works</div><div style="font-size:12.5px;color:var(--sec)">Design is not just what it looks like and feels like…</div></div>
+      <span class="ndot" style="background:linear-gradient(135deg,#8FB8FF,#4B63E6)"></span>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;margin-top:10px;font-size:11.5px;font-weight:600">
+      <span data-icon="sparkle"></span><span class="dash">+ Design</span><span class="dash">◫ Steve Jobs</span><span style="color:#3F318F;font-weight:700">Add</span><span style="color:var(--ter)">✕</span>
+    </div>
+  </div>
+</div><div class="caption" style="max-width:none">Left: the Mac quick panel (⌥Space) searches Typo and opt-in clipboard history from any app. Right: Apple Intelligence suggests a title, tags and a collection for a new save.</div></div>
+
 <script>
 const H = {
   Sage:['#B7D3B0','#6FA287','#2E5B47'], Lagoon:['#8EE3E0','#2F9FB4','#135E6C'], Ocean:['#8FB8FF','#4B63E6','#213A9E'],
@@ -366,7 +556,7 @@ const SYM = {
   pin:W('<path d="M9 3h6l-1 6 3.5 3.5h-11L10 9zM12 12.5V21"/>',0,0,'0 0 24 24',2.2),
 };
 const KC = {text:'Ocean',link:'Lagoon',photo:'Amber',gif:'Blush',doc:'Fog'};
-const tile = (hue,sym,size) => `<div class="tile" style="width:${size}px;height:${size}px;background:${grad(hue)};box-shadow:0 ${size*.08}px ${size*.22}px ${H[hue][1]}59">${SYM[sym].replace('<svg ',`<svg width="${size*.5}" height="${size*.5}" `)}</div>`;
+const tile = (hue,sym,size) => `<div class="tile" style="width:${size}px;height:${size}px;background:${grad(hue)};box-shadow:0 ${size*.08}px ${size*.22}px ${H[hue][1]}59">${(SYM[sym]||'<svg></svg>').replace('<svg ',`<svg width="${size*.5}" height="${size*.5}" `)}</div>`;
 const photo = (bg,size,gif) => `<div class="tile" style="width:${size}px;height:${size}px;background:${bg};box-shadow:0 3px 8px rgba(0,0,0,.14)">${gif?'<span class="gifb">GIF</span>':''}</div>`;
 const chip = (name,hue,big) => `<span class="chip${big?' l':''}" style="background:${soft(hue)};color:${H[hue][2]}">${name}</span>`;
 const TAGS = {Work:'Mist',Recipes:'Sage',Design:'Dusk',Travel:'Coral',Finance:'Honey'};
@@ -425,6 +615,58 @@ side.forEach(r=>{
   sh+=`<div class="si${r[3]?' sel':''}">${tile(r[2],r[0],24)}${r[1]}</div>`;
 });
 $('[data-side]').innerHTML = sh;
+document.querySelectorAll('[data-tile]').forEach(el=>{const [h,s,z]=el.dataset.tile.split('|'); el.innerHTML=tile(h,s,+z);});
+document.querySelectorAll('[data-icon]').forEach(el=>{ if(!el.innerHTML) el.innerHTML = I[el.dataset.icon]||''; });
+
+// ---- round 2 ----
+I.seal='<svg width="15" height="15" viewBox="0 0 24 24"><path d="M12 2l2.4 1.8 3-.2.9 2.9 2.5 1.7-1 2.8 1 2.8-2.5 1.7-.9 2.9-3-.2L12 22l-2.4-1.8-3 .2-.9-2.9-2.5-1.7 1-2.8-1-2.8 2.5-1.7.9-2.9 3 .2z" fill="#6FA287"/><path d="m8 12.3 2.8 2.8L16.5 9.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+I.wifi=W('<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.3" fill="currentColor"/>',20);
+I.plus2=W('<path d="M12 5v14M5 12h14"/>',18,18,'0 0 24 24',2.6);
+I.lockc=W('<rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',18);
+I.qopen='<svg width="20" height="16" viewBox="0 0 20 16"><defs><linearGradient id="qg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8FB8FF"/><stop offset="1" stop-color="#4B63E6"/></linearGradient></defs><path d="M0 16V9C0 4 2.5 1 7 0l1 2C5.5 3 4.5 5 4.5 7H8v9zM11 16V9c0-5 2.5-8 7-9l1 2c-2.5 1-3.5 3-3.5 5H19v9z" fill="url(#qg)"/></svg>';
+I.playw='<svg width="16" height="18" viewBox="0 0 16 18"><path d="M2 1.5v15L15 9z" fill="#fff"/></svg>';
+I.siri='<svg width="18" height="18" viewBox="0 0 24 24"><defs><linearGradient id="sir" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFC2CF"/><stop offset=".5" stop-color="#C7B6F2"/><stop offset="1" stop-color="#8EE3E0"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#sir)"/></svg>';
+SYM.wifi=W('<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.3" fill="currentColor"/>',0,0,'0 0 24 24',2.3);
+SYM.barcode='<svg viewBox="0 0 24 24" fill="#fff"><rect x="3" y="5" width="2" height="14"/><rect x="6.5" y="5" width="1" height="14"/><rect x="9" y="5" width="2.5" height="14"/><rect x="13" y="5" width="1" height="14"/><rect x="15.5" y="5" width="2" height="14"/><rect x="19" y="5" width="1.5" height="14"/></svg>';
+
+// Real QR matrix for "WIFI:T:WPA;S:Lighthouse Guest;P:...;;" is not needed for a mockup:
+// draw a plausible 29x29 pattern with correct finder patterns.
+function qrSVG(size, ink1, ink2, caption, dots){
+  const n=29, m=size/(n+2), o=m;
+  let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  let body='';
+  const inF=(x,y)=>(x<8&&y<8)||(x>=n-8&&y<8)||(x<8&&y>=n-8);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    if(inF(x,y))continue;
+    if(x>=12&&x<=16&&y>=12&&y<=16)continue;
+    if(rnd()<0.47){ body+= dots? `<circle cx="${o+x*m+m/2}" cy="${o+y*m+m/2}" r="${m*0.42}"/>` : `<rect x="${o+x*m+m*.05}" y="${o+y*m+m*.05}" width="${m*.9}" height="${m*.9}" rx="${m*.3}"/>`; }
+  }
+  const eye=(ex,ey)=>`<rect x="${o+ex*m+m*.5}" y="${o+ey*m+m*.5}" width="${m*6}" height="${m*6}" rx="${m*1.8}" fill="none" stroke="${ink2}" stroke-width="${m}"/><rect x="${o+(ex+2)*m}" y="${o+(ey+2)*m}" width="${m*3}" height="${m*3}" rx="${m*.9}" fill="${ink2}"/>`;
+  const badge=`<rect x="${o+12.3*m}" y="${o+12.3*m}" width="${m*4.4}" height="${m*4.4}" rx="${m*1.3}" fill="#fff"/><g transform="translate(${o+12.9*m} ${o+12.9*m}) scale(${m*3.2/24})" fill="none" stroke="${ink2}" stroke-width="2.6" stroke-linecap="round"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.3" fill="${ink2}"/></g>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><defs><linearGradient id="qf${size}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${ink1}"/><stop offset="1" stop-color="${ink2}"/></linearGradient></defs><g fill="url(#qf${size})">${body}</g>${eye(0,0)}${eye(n-7,0)}${eye(0,n-7)}${badge}</svg>`;
+}
+document.querySelectorAll('[data-qr]').forEach(el=>{
+  const big = el.classList.contains('big');
+  const sz = big?280:172;
+  const svg = qrSVG(sz,'#4F8A6C','#2E5B47','',el.dataset.qr==='sage');
+  el.innerHTML = `<div style="background:linear-gradient(135deg,rgba(183,211,176,.6),rgba(111,162,135,.3)),#fff;border-radius:28px;padding:${big?0:14}px;display:flex;flex-direction:column;align-items:center;gap:8px">${big?svg:`<div style="background:#f3f8f1;border-radius:18px;padding:6px">${svg}</div><b style="color:#2E5B47;font-size:14px">Scan for Wi-Fi</b>`}</div>`;
+  el.style.height='auto';
+});
+$('[data-types]').innerHTML = [['Link','Lagoon'],['Text','Ocean'],['Wi-Fi','Sage',1],['Contact','Dusk'],['Email','Mist'],['Phone','Amber'],['Message','Blush'],['Location','Coral'],['Event','Plum']]
+  .map(([t,h,on])=>`<span class="tchip glass" style="${on?`background:${H[h][1]}40;color:${H[h][2]}`:'background:rgba(255,255,255,.5)'}"><i style="width:9px;height:9px;border-radius:5px;background:${grad(h)};display:block"></i>${t}</span>`).join('');
+$('[data-presets]').innerHTML = [['Classic','#15161C','#15161C'],['Ocean','#3d55c9','#213A9E'],['Sage','#4F8A6C','#2E5B47',1],['Lagoon','#1f7f92','#135E6C'],['Dusk','#5a49b8','#3F318F']]
+  .map(([n,a,b,on])=>`<div style="text-align:center;font-size:10.5px;color:var(--sec)"><div style="background:#fff;border-radius:12px;padding:3px;${on?'box-shadow:0 0 0 2.5px #2E5B47':''}">${qrSVG(44,a,b,'',n==='Sage')}</div>${n}</div>`).join('');
+// EAN-13 bars for 4006381333931 (real pattern)
+(function(){
+  const L=["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"];
+  const P=["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
+  const R=d=>L[d].split('').map(c=>c==='0'?'1':'0').join(''); const G=d=>R(d).split('').reverse().join('');
+  const dg='4006381333931'.split('').map(Number);
+  let s='101'; dg.slice(1,7).forEach((d,i)=>s+= P[dg[0]][i]==='L'?L[d]:G(d)); s+='01010'; dg.slice(7).forEach(d=>s+=R(d)); s+='101';
+  const w=320/s.length; let r='';
+  s.split('').forEach((c,i)=>{ if(c==='1') r+=`<rect x="${i*w}" y="0" width="${w+0.2}" height="120"/>`});
+  $('[data-barcode]').innerHTML=`<svg width="100%" height="120" viewBox="0 0 320 120" preserveAspectRatio="none">${r}</svg>`;
+})();
 document.querySelectorAll('[data-tile]').forEach(el=>{const [h,s,z]=el.dataset.tile.split('|'); el.innerHTML=tile(h,s,+z);});
 document.querySelectorAll('[data-icon]').forEach(el=>{ if(!el.innerHTML) el.innerHTML = I[el.dataset.icon]||''; });
 </script>

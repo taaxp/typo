@@ -1,8 +1,14 @@
 import Foundation
 import SwiftData
+import AVFoundation
+import ImageIO
 #if canImport(LinkPresentation)
 import LinkPresentation
 #endif
+
+extension Notification.Name {
+    static let typoItemSaved = Notification.Name("TypoItemSaved")
+}
 
 /// All writes to the library go through here so every input path behaves the same.
 @MainActor
@@ -22,11 +28,16 @@ struct TypoLibrary {
         if let data = draft.payload, draft.kind == .photo || draft.kind == .gif {
             item.thumbnail = Ingest.thumbnail(for: data)
         }
+        if draft.kind == .video, draft.payload != nil {
+            Task { await makeVideoThumbnail(for: item) }
+        }
         context.insert(item)
         let resolved = tags + tagNames.compactMap { tag(named: $0, create: true) }
         item.tags = Array(Set(resolved))
         try? context.save()
         if item.kind == .link { Task { await fetchLinkTitle(for: item) } }
+        // The app's assistant (OCR, QR detection, AI suggestions) listens for this.
+        NotificationCenter.default.post(name: .typoItemSaved, object: item.persistentModelID)
         return item
     }
 
@@ -46,6 +57,10 @@ struct TypoLibrary {
                                     typeIdentifier: m.typeIdentifier, filename: m.filename)
             let item = save(draft, tagNames: m.tagNames)
             item.createdAt = m.createdAt
+            let collections = CollectionLibrary(context: context)
+            for name in m.collectionNames ?? [] {
+                if let collection = collections.named(name, create: true) { collections.add([item], to: collection) }
+            }
             try? FileManager.default.removeItem(at: entry.folder)
             count += 1
         }
@@ -107,20 +122,52 @@ struct TypoLibrary {
 
     // MARK: Links
 
-    /// Fills in a link's title from the page, unless the user has renamed it.
+    /// Fills in a link's title and preview image (e.g. a YouTube thumbnail) from
+    /// the page. A title the user set is never overwritten.
     func fetchLinkTitle(for item: TypoItem) async {
         #if canImport(LinkPresentation)
-        guard item.kind == .link, !item.hasCustomTitle, !item.didFetchLinkTitle, let url = item.url else { return }
+        guard item.kind == .link, !item.didFetchLinkTitle, let url = item.url else { return }
         item.didFetchLinkTitle = true
         let provider = LPMetadataProvider()
         provider.timeout = 10
-        if let metadata = try? await provider.startFetchingMetadata(for: url),
-           let title = metadata.title, !title.isEmpty, !item.hasCustomTitle {
-            item.title = title
+        if let metadata = try? await provider.startFetchingMetadata(for: url) {
+            if let title = metadata.title, !title.isEmpty, !item.hasCustomTitle {
+                item.title = title
+            }
+            if item.thumbnail == nil, let imageProvider = metadata.imageProvider,
+               let data = try? await Self.loadImageData(imageProvider) {
+                item.thumbnail = Ingest.thumbnail(for: data, maxPixel: 600)
+            }
             item.touch()
         }
         try? context.save()
         #endif
+    }
+
+    private static func loadImageData(_ provider: NSItemProvider) async throws -> Data {
+        try await withCheckedThrowingContinuation { cont in
+            _ = provider.loadDataRepresentation(forTypeIdentifier: "public.image") { data, error in
+                if let data { cont.resume(returning: data) } else { cont.resume(throwing: error ?? IngestError.nothingUsable) }
+            }
+        }
+    }
+
+    // MARK: Video
+
+    /// A poster frame for saved videos, from about one second in.
+    func makeVideoThumbnail(for item: TypoItem) async {
+        guard let url = TempFiles.url(for: item) else { return }
+        let asset = AVURLAsset(url: url)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: 600, height: 600)
+        guard let (image, _) = try? await generator.image(at: CMTime(seconds: 1, preferredTimescale: 600)) else { return }
+        let out = NSMutableData()
+        guard let dest = CGImageDestinationCreateWithData(out, "public.jpeg" as CFString, 1, nil) else { return }
+        CGImageDestinationAddImage(dest, image, [kCGImageDestinationLossyCompressionQuality: 0.75] as CFDictionary)
+        guard CGImageDestinationFinalize(dest) else { return }
+        item.thumbnail = out as Data
+        try? context.save()
     }
 
     func fetchMissingLinkTitles() async {

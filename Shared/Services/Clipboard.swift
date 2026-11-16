@@ -22,6 +22,33 @@ enum Clipboard {
         #endif
     }
 
+    /// For card numbers and passwords: expires after `seconds`, never reaches other
+    /// devices through Universal Clipboard (iOS), and is marked concealed so Mac
+    /// clipboard managers (including Typo's own history) skip it.
+    static func copySensitive(_ text: String, seconds: TimeInterval = 60) {
+        #if canImport(UIKit)
+        UIPasteboard.general.setItems([[UTType.utf8PlainText.identifier: text]],
+                                      options: [.expirationDate: Date().addingTimeInterval(seconds), .localOnly: true])
+        #elseif canImport(AppKit)
+        let pb = NSPasteboard.general
+        pb.clearContents()
+        pb.declareTypes([.string, concealedType], owner: nil)
+        pb.setString(text, forType: .string)
+        pb.setString("", forType: concealedType)
+        let change = pb.changeCount
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            // Only clear if nothing else has been copied since.
+            if NSPasteboard.general.changeCount == change { NSPasteboard.general.clearContents() }
+        }
+        #endif
+    }
+
+    #if canImport(AppKit) && !canImport(UIKit)
+    /// Community convention (nspasteboard.org) honoured by clipboard managers.
+    static let concealedType = NSPasteboard.PasteboardType("org.nspasteboard.ConcealedType")
+    static let transientType = NSPasteboard.PasteboardType("org.nspasteboard.TransientType")
+    #endif
+
     static func copy(text: String) {
         #if canImport(UIKit)
         UIPasteboard.general.string = text
@@ -42,7 +69,7 @@ enum Clipboard {
             var reps: [String: Any] = [UTType.utf8PlainText.identifier: item.text]
             if let url = item.url { reps[UTType.url.identifier] = url }
             return reps
-        case .photo, .gif, .document:
+        case .photo, .gif, .video, .document:
             guard let data = item.payload else { return [UTType.utf8PlainText.identifier: item.displayTitle] }
             let type = item.utType ?? (item.kind == .gif ? .gif : .data)
             var reps: [String: Any] = [type.identifier: data]
