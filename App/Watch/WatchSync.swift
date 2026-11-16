@@ -91,7 +91,8 @@ final class WatchSync: NSObject, WCSessionDelegate {
                                                                         sortBy: [SortDescriptor(\.sortIndex, order: .reverse)]))) ?? []
             snippets = pinned.filter { $0.kind == .text || $0.kind == .link }.map { item in
                 WatchSnippet(id: item.uuid, title: item.displayTitle,
-                             text: item.isTemplate ? Template.render(item.text).text : item.text,
+                             // Capped so the application context stays well under its size limit.
+                             text: String((item.isTemplate ? Template.render(item.text).text : item.text).prefix(1000)),
                              hueName: CategoryColours.hueName(for: item.kind))
             }
         }

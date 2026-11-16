@@ -82,7 +82,7 @@ struct WatchPackTests {
         let card = WatchCard(id: UUID(), title: "Gym", kind: .member, hueName: "Amber", caption: "4006381333931",
                              imageFile: "card.png", updatedAt: Date(timeIntervalSince1970: 1_800_000_000))
         let snippets = (0..<40).map { WatchSnippet(id: UUID(), title: "S\($0)", text: "t", hueName: "Ocean") }
-        let pack = WatchPack(cards: [card], snippets: snippets)
+        let pack = WatchPack(cards: [card], snippets: snippets, generatedAt: Date(timeIntervalSince1970: 1_800_000_000))
         #expect(pack.snippets.count == WatchPack.maxSnippets)
         #expect(WatchPack.decode(pack.encoded()) == pack)
         #expect(card.symbol == "barcode")

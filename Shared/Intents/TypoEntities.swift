@@ -41,7 +41,7 @@ struct TypoItemEntity: IndexedEntity {
 
     var hideInSpotlight: Bool { !SpotlightSettings.isEnabled }
 
-    @MainActor
+    /// Call on the main actor (the model context is main-actor bound).
     init(_ item: TypoItem) {
         id = item.uuid
         title = item.displayTitle
@@ -83,8 +83,8 @@ struct TypoItemQuery: EntityStringQuery, IndexedEntityQuery {
     }
 
     func reindexEntities(for identifiers: [UUID], indexDescription: CSSearchableIndexDescription) async throws {
-        let entities = try await entities(for: identifiers)
-        try await SpotlightIndex.index.indexAppEntities(entities)
+        let found = try await entities(for: identifiers)
+        try await SpotlightIndex.index.indexAppEntities(found)
     }
 
     func reindexAllEntities(indexDescription: CSSearchableIndexDescription) async throws {
@@ -115,7 +115,6 @@ struct CollectionEntity: IndexedEntity {
 
     var hideInSpotlight: Bool { !SpotlightSettings.isEnabled }
 
-    @MainActor
     init(_ c: TypoCollection) {
         id = c.uuid; name = c.name; note = c.note; count = c.count
     }
@@ -200,6 +199,7 @@ struct OpenItemIntent: OpenIntent {
     @Parameter(title: "Item", requestValueDialog: "Which item?")
     var target: TypoItemEntity
 
+    @MainActor
     func perform() async throws -> some IntentResult {
         PendingOpen.request("item:\(target.id.uuidString)")
         return .result()
@@ -212,6 +212,7 @@ struct OpenCollectionIntent: OpenIntent {
     @Parameter(title: "Collection", requestValueDialog: "Which collection?")
     var target: CollectionEntity
 
+    @MainActor
     func perform() async throws -> some IntentResult {
         PendingOpen.request("collection:\(target.id.uuidString)")
         return .result()
@@ -224,6 +225,7 @@ struct OpenCodeIntent: OpenIntent {
     @Parameter(title: "Code", requestValueDialog: "Which code?")
     var target: CodeEntity
 
+    @MainActor
     func perform() async throws -> some IntentResult {
         AppGroup.defaults.set(target.id.uuidString, forKey: AppGroup.Key.pendingCodeID)
         NotificationCenter.default.post(name: .typoPendingOpen, object: nil)

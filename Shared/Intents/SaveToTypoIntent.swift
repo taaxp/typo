@@ -120,7 +120,7 @@ struct TypoShortcuts: AppShortcutsProvider {
                     phrases: ["Copy my \(\.$code) password with \(.applicationName)", "Copy the \(\.$code) Wi-Fi password from \(.applicationName)"],
                     shortTitle: "Copy Wi-Fi Password", systemImageName: "wifi")
         AppShortcut(intent: OpenCollectionIntent(),
-                    phrases: ["Open my \(\.$target) collection in \(.applicationName)", "Show \(\.$target) in \(.applicationName)"],
+                    phrases: ["Open my \(\.$target) collection in \(.applicationName)", "Open the \(\.$target) collection in \(.applicationName)"],
                     shortTitle: "Open Collection", systemImageName: "square.stack.3d.up")
     }
 }

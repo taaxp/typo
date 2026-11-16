@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Combine
 
 @main
 struct TypoApp: App {
@@ -187,7 +188,7 @@ struct RootView: View {
             .onReceive(NotificationCenter.default.publisher(for: .typoInboxChanged)) { _ in
                 Task { await refresh() }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .typoPendingOpen)) { _ in
+            .onReceive(NotificationCenter.default.publisher(for: .typoPendingOpen).receive(on: RunLoop.main)) { _ in
                 handlePendingOpen()
             }
             .onAppear { InboxObserver.start() }

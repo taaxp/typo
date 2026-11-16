@@ -10,7 +10,7 @@ import Observation
 @Observable
 final class WatchStore: NSObject, WCSessionDelegate {
     private(set) var pack = WatchPack.loadLocal()
-    private var imageCache: [String: Image] = [:]
+    @ObservationIgnored private var imageCache: [String: Image] = [:]
 
     func start() {
         guard WCSession.isSupported() else { return }
