@@ -1,0 +1,100 @@
+name: iOS build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+          xcrun simctl list runtimes | grep -i ios || true
+
+      - name: Generate project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build for iOS Simulator (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Typo.xcodeproj \
+            -scheme Typo \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee build.log
+
+      - name: Summarise errors and warnings
+        if: always()
+        run: |
+          {
+            echo "## Build errors"
+            grep -E "error: " build.log | sed 's#^.*/Typo/##' | sort -u | head -300 || echo "None"
+            echo
+            echo "## Notable warnings"
+            grep -E "warning: .*(deprecated|unavailable|never|isolat|Sendable)" build.log | sed 's#^.*/Typo/##' | sort -u | head -100 || echo "None"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+
+      - name: Simulator screenshots
+        id: shots
+        run: |
+          set -e
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)["devices"]
+          phones = [d for rt, ds in data.items() if "iOS" in rt for d in ds if d["name"].startswith("iPhone")]
+          pick = next((d for d in phones if d["name"] == "iPhone 17 Pro"), None) or next((d for d in phones if "iPhone 17" in d["name"]), None) or phones[-1]
+          print(pick["udid"])')
+          echo "Simulator: $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+          APP=build/Build/Products/Debug-iphonesimulator/Typo.app
+          BUNDLE=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP/Info.plist")
+          xcrun simctl install "$UDID" "$APP"
+          mkdir -p shots
+          xcrun simctl launch "$UDID" "$BUNDLE" -TypoDemoData YES
+          sleep 10
+          xcrun simctl io "$UDID" screenshot shots/01-library.png
+          for route in codes quicksave dictate; do
+            xcrun simctl openurl "$UDID" "typo://$route"
+            sleep 5
+            xcrun simctl io "$UDID" screenshot "shots/02-$route.png"
+            xcrun simctl terminate "$UDID" "$BUNDLE" || true
+            xcrun simctl launch "$UDID" "$BUNDLE" -TypoDemoData YES
+            sleep 6
+          done
+          xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "Typo"' --style compact > shots/app-log.txt || true
+          (cd build/Build/Products/Debug-iphonesimulator && zip -qry "$GITHUB_WORKSPACE/shots/Typo-simulator.app.zip" Typo.app)
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-screenshots
+          path: shots/
+          if-no-files-found: ignore

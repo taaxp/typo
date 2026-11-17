@@ -16,7 +16,34 @@ enum TypoStore {
 
     static let schema = Schema([TypoItem.self, Tag.self, TypoCollection.self, CodeItem.self])
 
+    /// True when the App Group entitlement is present (signed builds). Unsigned
+    /// builds, such as CI simulator builds, have no App Group, iCloud or Keychain group.
+    static var hasAppGroup: Bool {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppGroup.id) != nil
+    }
+
     static func makeContainer(role: Role) throws -> ModelContainer {
+        guard hasAppGroup else {
+            print("Typo: no App Group entitlement (unsigned build); using a local store without iCloud sync.")
+            return try localContainer(role: role)
+        }
+        do {
+            return try syncedContainer(role: role)
+        } catch {
+            print("Typo: couldn't open the iCloud store (\(error)); falling back to a local store.")
+            return try localContainer(role: role)
+        }
+    }
+
+    /// Local-only store in Application Support: no App Group, no CloudKit.
+    private static func localContainer(role: Role) throws -> ModelContainer {
+        let url = AppGroup.containerURL.appendingPathComponent("Typo-local.store")
+        let config = ModelConfiguration("Typo", schema: schema, url: url,
+                                        allowsSave: role == .app, cloudKitDatabase: .none)
+        return try ModelContainer(for: schema, configurations: [config])
+    }
+
+    private static func syncedContainer(role: Role) throws -> ModelContainer {
         // Same layout on iPhone, iPad and Mac: the store lives in the App Group so
         // the keyboard and share extensions (iOS and Mac) can read it.
         let config: ModelConfiguration

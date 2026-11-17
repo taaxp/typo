@@ -171,6 +171,9 @@ struct RootView: View {
             .sheet(item: $model.presentingCode) { PresentCodeView(draft: $0).frame(minWidth: 520, minHeight: 640) }
             #endif
             .task {
+                #if DEBUG
+                DemoData.seedIfRequested(context)
+                #endif
                 model.assistant.start(container: context.container)
                 model.spotlight.start(container: context.container)
                 model.hueSync.start()

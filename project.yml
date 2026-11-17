@@ -51,7 +51,9 @@ targets:
       - target: TypoKeyboard
       - target: TypoShare
       - target: TypoWidgets
-      - target: TypoWatch          # check it lands in "Embed Watch Content" after generating
+      # iOS-first: the Apple Watch app is left out of the first CI builds so they
+      # don't depend on watchOS simulator SDKs. Restore once iOS builds cleanly:
+      # - target: TypoWatch        # check it lands in "Embed Watch Content" after generating
 
   # ---------------------------------------------------------------- Mac app
   TypoMac:
