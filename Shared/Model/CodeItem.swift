@@ -25,8 +25,6 @@ final class CodeItem {
     var isPinned: Bool = false
     var sortIndex: Double = Date().timeIntervalSinceReferenceDate
     var showOnWidget: Bool = false
-    /// Sent to the Apple Watch (rendered as an image by the iPhone).
-    var showOnWatch: Bool = false
     var createdAt: Date = Date()
     var modifiedAt: Date = Date()
 

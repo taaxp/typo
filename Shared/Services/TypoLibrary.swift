@@ -8,7 +8,7 @@ import LinkPresentation
 
 extension Notification.Name {
     static let typoItemSaved = Notification.Name("TypoItemSaved")
-    /// Edits, deletes, pins and collection changes (Spotlight, Apple Watch).
+    /// Edits, deletes, pins and collection changes (Spotlight).
     static let typoLibraryChanged = Notification.Name("TypoLibraryChanged")
 }
 

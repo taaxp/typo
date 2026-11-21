@@ -8,9 +8,6 @@ struct SettingsView: View {
     @Query(sort: \Tag.name) private var tags: [Tag]
     @Query(filter: #Predicate<TypoItem> { $0.shortcut != "" }, sort: \TypoItem.shortcut) private var shortcuts: [TypoItem]
     @AppStorage(SpotlightSettings.key, store: AppGroup.defaults) private var spotlightOn = true
-    #if os(iOS)
-    @AppStorage(WatchSync.snippetsKey, store: AppGroup.defaults) private var watchSnippets = true
-    #endif
     @AppStorage(AppGroup.Key.recentsAgeOutDays, store: AppGroup.defaults) private var ageOutDays = 3
     @State private var hueRevision = 0
     @AppStorage(SaveAssistant.autoApplyKey, store: AppGroup.defaults) private var autoApplySuggestions = false
@@ -22,7 +19,7 @@ struct SettingsView: View {
                     NavigationLink {
                         HueChooser(title: kind.title, selection: Binding(
                             get: { _ = hueRevision; return CategoryColours.hueName(for: kind) },
-                            set: { CategoryColours.set($0, for: kind); model.hueSync.push(); hueRevision += 1 }))
+                            set: { CategoryColours.set($0, for: kind); hueRevision += 1 }))
                     } label: {
                         HStack(spacing: 12) {
                             HueTile(hue: CategoryColours.hue(for: kind), symbol: kind.symbol, size: 30)
@@ -33,7 +30,7 @@ struct SettingsView: View {
                     }
                     .id("\(kind.rawValue)-\(hueRevision)")
                 }
-                Button("Reset to Defaults") { CategoryColours.reset(); model.hueSync.push(); hueRevision += 1 }
+                Button("Reset to Defaults") { CategoryColours.reset(); hueRevision += 1 }
             } header: {
                 Text("Categories")
             }
@@ -117,16 +114,6 @@ struct SettingsView: View {
                 Text("Snippets, links, files, collections and code names appear in system search, and Siri can copy them (\"Copy my address from Typo\"). Bank cards, Wi-Fi passwords and clipboard history are never indexed.")
             }
 
-            #if os(iOS)
-            Section {
-                Toggle("Send pinned snippets", isOn: $watchSnippets)
-                    .onChange(of: watchSnippets) { _, _ in model.watch.schedule() }
-                Text("To put a member card or guest Wi-Fi code on your watch, open Codes, touch and hold the code, and choose Show on Apple Watch.")
-                    .font(.footnote).foregroundStyle(.secondary)
-            } header: {
-                Text("Apple Watch")
-            }
-            #endif
 
             Section {
                 Toggle("Apply suggestions automatically", isOn: $autoApplySuggestions)
@@ -135,10 +122,6 @@ struct SettingsView: View {
             } footer: {
                 Text("Apple Intelligence suggests tags, a collection and a summary for new saves, and Typo reads text in photos so you can search it. All on this device. When this is off, suggestions appear as dashed chips you can accept.")
             }
-
-            #if os(macOS)
-            MacSettingsSection()
-            #endif
 
             Section {
                 NavigationLink { SyncStatusView() } label: { Label("Sync Status", systemImage: "icloud") }

@@ -23,37 +23,6 @@ struct TypoApp: App {
                 .onOpenURL { url in model.open(AppRoute(url: url)) }
         }
         .modelContainer(container)
-        #if os(macOS)
-        .commands {
-            CommandGroup(after: .newItem) {
-                Button("Quick Save from Clipboard") { model.open(.quickSave) }
-                    .keyboardShortcut("v", modifiers: [.command, .shift])
-                Button("Dictate") { model.open(.dictate) }
-                    .keyboardShortcut("d", modifiers: [.command, .shift])
-                Button("New QR Code") { model.open(.newCode) }
-                    .keyboardShortcut("q", modifiers: [.command, .shift])
-                Button("New Collection") { model.open(.newCollection) }
-                    .keyboardShortcut("n", modifiers: [.command, .shift])
-                Button("Quick Panel") { model.mac.togglePanel() }
-            }
-        }
-        #endif
-
-        #if os(macOS)
-        Settings {
-            NavigationStack { SettingsView() }
-                .environment(model)
-                .modelContainer(container)
-        }
-
-        MenuBarExtra("Typo", systemImage: "square.stack.3d.up.fill") {
-            QuickPanelView(history: model.mac.history, close: {})
-                .modelContainer(container)
-                .environment(model)
-                .frame(width: 560, height: 440)
-        }
-        .menuBarExtraStyle(.window)
-        #endif
     }
 }
 
@@ -76,13 +45,6 @@ final class AppModel {
     let vaultLock = VaultLock()
     let vault = VaultStore()
     let spotlight = SpotlightSync()
-    let hueSync = HueSync()
-    #if os(iOS)
-    let watch = WatchSync()
-    #endif
-    #if os(macOS)
-    let mac = MacController()
-    #endif
 
     /// Routes from URLs, intents, widgets and menus.
     func open(_ route: AppRoute?) {
@@ -90,12 +52,7 @@ final class AppModel {
         switch route {
         case .codes: filter = .codes
         case .vault: filter = .vault
-        case .scan:
-            #if os(iOS)
-            scanning = true
-            #else
-            break   // no live scanner on Mac
-            #endif
+        case .scan: scanning = true
         default: self.route = route
         }
     }
@@ -104,11 +61,7 @@ final class AppModel {
     /// Returns true when it took over the copy.
     func interceptTemplateCopy(_ items: [TypoItem]) -> Bool {
         guard items.count == 1, let item = items.first, item.isTemplate else { return false }
-        #if os(macOS)
-        let fields = Template.fields(in: item.text, clipboardReadable: true)
-        #else
         let fields = Template.fields(in: item.text)
-        #endif
         guard !fields.isEmpty else { return false }
         fillingTemplate = item
         return true
@@ -148,28 +101,15 @@ struct RootView: View {
                     default: EmptyView()
                     }
                 }
-                #if os(macOS)
-                .frame(minWidth: 480, minHeight: 520)
-                #endif
             }
             .sheet(item: $model.focusedItem) { item in
                 NavigationStack { ItemDetailView(item: item) }
-                #if os(macOS)
-                .frame(minWidth: 480, minHeight: 560)
-                #endif
             }
             .sheet(item: $model.fillingTemplate) { item in
                 NavigationStack { FillTemplateView(item: item) }
-                #if os(macOS)
-                .frame(minWidth: 460, minHeight: 420)
-                #endif
             }
-            #if os(iOS)
             .fullScreenCover(isPresented: $model.scanning) { ScanView() }
             .fullScreenCover(item: $model.presentingCode) { PresentCodeView(draft: $0) }
-            #else
-            .sheet(item: $model.presentingCode) { PresentCodeView(draft: $0).frame(minWidth: 520, minHeight: 640) }
-            #endif
             .task {
                 #if DEBUG
                 DemoData.seedIfRequested(context)
@@ -184,13 +124,6 @@ struct RootView: View {
                 #endif
                 model.assistant.start(container: context.container)
                 model.spotlight.start(container: context.container)
-                model.hueSync.start()
-                #if os(iOS)
-                model.watch.start(container: context.container)
-                #endif
-                #if os(macOS)
-                model.mac.start(container: context.container, model: model)
-                #endif
                 await refresh()
             }
             .onChange(of: scenePhase) { _, phase in

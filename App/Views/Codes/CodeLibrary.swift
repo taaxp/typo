@@ -42,7 +42,7 @@ struct CodeLibrary {
         if existing == nil { context.insert(item) }
         try context.save()
         TypoShortcuts.updateAppShortcutParameters()   // "Show my <code>" phrases
-        TypoLibrary.notifyChanged()                   // Spotlight and Apple Watch
+        TypoLibrary.notifyChanged()                   // Spotlight
         if item.showOnWidget { refreshWidget(with: item) }
         return item
     }
