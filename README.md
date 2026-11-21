@@ -4,7 +4,7 @@
 
 The fastest place to put things you'll need again. Save text, links, photos, GIFs and files from anywhere. Each saved item is one tap from your clipboard on iPhone, iPad and Mac, and from the Typo keyboard in any app.
 
-> **Scope (21 November 2026):** Typo is now an iPhone and iPad app only. The Apple Watch app, Mac app, Mac share extension, Mac quick panel and clipboard history, and iCloud hue sync were removed to keep it simple; mentions of them below describe removed work. To run it on your phone, see [docs/RUN_ON_IPHONE.md](docs/RUN_ON_IPHONE.md).
+> **Scope (21 November 2026):** Typo is now an iPhone and iPad app only. The Apple Watch app, Mac app, Mac share extension, Mac quick panel and clipboard history, and iCloud hue sync were removed to keep it simple; mentions of them below describe removed work. The default `project.yml` is the **simple app** for a free Apple ID (no keyboard, share sheet, widgets or iCloud); `project-full.yml` is the full version for a paid developer account. To run it on your phone, see [docs/RUN_ON_IPHONE.md](docs/RUN_ON_IPHONE.md).
 
 Written November 2026. **Status (21 November 2026):** the iOS app (with its keyboard, share and widget extensions) now **builds with Xcode 26 and launches in the iPhone simulator**, checked by the GitHub Actions workflow in `.github/workflows/ios-build.yml`. The screenshots in `docs/screenshots/simulator/` are real simulator captures. **Not yet built or run:** the Mac app, the Apple Watch app (left out of the iOS build for now), the unit tests, and everything that needs a real device or a signed build: camera scanning, Face ID, the keyboard with Full Access, Apple Intelligence, iCloud sync, Siri, widgets and Spotlight. See "Status" below.
 

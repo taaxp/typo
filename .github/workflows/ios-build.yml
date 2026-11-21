@@ -121,6 +121,16 @@ jobs:
           git commit -q -m "Simulator screenshots for ${GITHUB_SHA::7}"
           git push -f origin simulator-screenshots
 
+      - name: Also compile the full version (keyboard, share, widgets; unsigned)
+        if: always()
+        run: |
+          set -o pipefail
+          xcodegen generate --spec project-full.yml
+          xcodebuild -project Typo.xcodeproj -scheme Typo -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build-full \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build-full.log | grep -E "error: |BUILD (SUCCEEDED|FAILED)" || true
+          grep -q "BUILD SUCCEEDED" build-full.log
+
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
