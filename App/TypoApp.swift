@@ -173,6 +173,14 @@ struct RootView: View {
             .task {
                 #if DEBUG
                 DemoData.seedIfRequested(context)
+                if DemoData.wantsCollection,
+                   let first = try? context.fetch(FetchDescriptor<TypoCollection>(sortBy: [SortDescriptor(\.name)])).first {
+                    model.filter = .collection(first)
+                }
+                if let route = DemoData.requestedRoute {
+                    try? await Task.sleep(for: .seconds(1))
+                    model.open(route)
+                }
                 #endif
                 model.assistant.start(container: context.container)
                 model.spotlight.start(container: context.container)

@@ -9,6 +9,15 @@ import SwiftData
 enum DemoData {
     static var isRequested: Bool { UserDefaults.standard.bool(forKey: "TypoDemoData") }
 
+    /// `-TypoRoute codes|quicksave|dictate|vault|sync|newcode|newcollection` opens that
+    /// screen at launch, so CI can screenshot it without tapping through a link prompt.
+    static var requestedRoute: AppRoute? {
+        UserDefaults.standard.string(forKey: "TypoRoute").flatMap(AppRoute.init(rawValue:))
+    }
+
+    /// `-TypoCollection YES` opens the first collection's board.
+    static var wantsCollection: Bool { UserDefaults.standard.bool(forKey: "TypoCollection") }
+
     static func seedIfRequested(_ context: ModelContext) {
         guard isRequested, ((try? context.fetchCount(FetchDescriptor<TypoItem>())) ?? 0) == 0 else { return }
         let collections = CollectionLibrary(context: context)

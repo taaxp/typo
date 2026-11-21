@@ -66,6 +66,12 @@ final class SyncMonitor {
     }
 
     func refreshAccountStatus() async {
+        // Creating a CKContainer without the iCloud entitlement (unsigned builds, or no
+        // developer team) raises an exception that ends the app, so don't touch it.
+        guard TypoStore.hasAppGroup else {
+            accountStatus = .noAccount
+            return
+        }
         accountStatus = (try? await CKContainer(identifier: AppGroup.cloudKitContainer).accountStatus()) ?? .couldNotDetermine
     }
 

@@ -80,17 +80,22 @@ jobs:
           BUNDLE=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP/Info.plist")
           xcrun simctl install "$UDID" "$APP"
           mkdir -p shots
-          xcrun simctl launch "$UDID" "$BUNDLE" -TypoDemoData YES
-          sleep 10
-          xcrun simctl io "$UDID" screenshot shots/01-library.png
-          for route in codes quicksave dictate; do
-            xcrun simctl openurl "$UDID" "typo://$route"
-            sleep 5
-            xcrun simctl io "$UDID" screenshot "shots/02-$route.png"
-            xcrun simctl terminate "$UDID" "$BUNDLE" || true
-            xcrun simctl launch "$UDID" "$BUNDLE" -TypoDemoData YES
-            sleep 6
-          done
+          shoot() {  # name, then launch arguments
+            NAME=$1; shift
+            xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
+            xcrun simctl launch "$UDID" "$BUNDLE" -TypoDemoData YES "$@"
+            sleep 9
+            xcrun simctl io "$UDID" screenshot "shots/$NAME.png"
+            echo "app running? $(xcrun simctl spawn "$UDID" launchctl list | grep -c "$BUNDLE")"
+          }
+          shoot 01-library
+          shoot 02-collection -TypoCollection YES
+          shoot 03-codes -TypoRoute codes
+          shoot 04-quicksave -TypoRoute quicksave
+          shoot 05-dictate -TypoRoute dictate
+          shoot 06-vault -TypoRoute vault
+          shoot 07-sync -TypoRoute sync
+          shoot 08-newcode -TypoRoute newcode
           xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "Typo"' --style compact > shots/app-log.txt || true
           (cd build/Build/Products/Debug-iphonesimulator && zip -qry "$GITHUB_WORKSPACE/shots/Typo-simulator.app.zip" Typo.app)
 
