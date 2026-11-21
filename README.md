@@ -4,7 +4,19 @@
 
 The fastest place to put things you'll need again. Save text, links, photos, GIFs and files from anywhere. Each saved item is one tap from your clipboard on iPhone, iPad and Mac, and from the Typo keyboard in any app.
 
-Written 15 November 2026. **This code has not been compiled yet.** It was written in a Linux environment with no Xcode. It passes a Swift syntax check, but the first build on a Mac will almost certainly need small fixes. See "Status" below.
+Written November 2026. **Status (21 November 2026):** the iOS app (with its keyboard, share and widget extensions) now **builds with Xcode 26 and launches in the iPhone simulator**, checked by the GitHub Actions workflow in `.github/workflows/ios-build.yml`. The screenshots in `docs/screenshots/simulator/` are real simulator captures. **Not yet built or run:** the Mac app, the Apple Watch app (left out of the iOS build for now), the unit tests, and everything that needs a real device or a signed build: camera scanning, Face ID, the keyboard with Full Access, Apple Intelligence, iCloud sync, Siri, widgets and Spotlight. See "Status" below.
+
+### Real screenshots (iPhone 17 Pro simulator, unsigned debug build, sample data)
+
+| Library | Collection | Codes | Quick Save |
+|---|---|---|---|
+| ![Library](docs/screenshots/simulator/01-library.png) | ![Collection](docs/screenshots/simulator/02-collection.png) | ![Codes](docs/screenshots/simulator/03-codes.png) | ![Quick Save](docs/screenshots/simulator/04-quicksave.png) |
+
+| Dictate | Vault | Sync | New QR code |
+|---|---|---|---|
+| ![Dictate](docs/screenshots/simulator/05-dictate.png) | ![Vault](docs/screenshots/simulator/06-vault.png) | ![Sync](docs/screenshots/simulator/07-sync.png) | ![New QR](docs/screenshots/simulator/08-newcode.png) |
+
+The simulator build is unsigned, so it has no iCloud, App Group or Keychain sharing: the app uses a local store and shows sync as signed out. The sample library only loads in debug builds started with `-TypoDemoData YES`.
 
 ## Screens
 
