@@ -111,15 +111,15 @@ jobs:
         if: always()
         run: |
           [ -n "$(ls shots/*.png 2>/dev/null)" ] || { echo "no screenshots to publish"; exit 0; }
-          mkdir -p /tmp/pub && cp shots/*.png shots/app-log.txt /tmp/pub/ 2>/dev/null || true
+          rm -rf /tmp/pub && mkdir -p /tmp/pub
+          cp shots/*.png shots/app-log.txt /tmp/pub/ 2>/dev/null || true
+          cd /tmp/pub        # a separate folder, so the project checkout is left untouched
+          git init -q -b simulator-screenshots
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git checkout --orphan simulator-screenshots
-          git rm -rf . -q
-          cp /tmp/pub/* .
           git add -A
           git commit -q -m "Simulator screenshots for ${GITHUB_SHA::7}"
-          git push -f origin simulator-screenshots
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" simulator-screenshots
 
       - name: Also compile the full version (keyboard, share, widgets; unsigned)
         if: always()
