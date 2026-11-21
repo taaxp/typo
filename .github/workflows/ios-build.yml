@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write   # lets the job publish screenshots to the simulator-screenshots branch
+
 concurrency:
   group: ios-build-${{ github.ref }}
   cancel-in-progress: true
@@ -90,6 +93,28 @@ jobs:
           done
           xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "Typo"' --style compact > shots/app-log.txt || true
           (cd build/Build/Products/Debug-iphonesimulator && zip -qry "$GITHUB_WORKSPACE/shots/Typo-simulator.app.zip" Typo.app)
+
+      - name: Show app log
+        if: always()
+        run: |
+          echo "--- last lines of the app's log"
+          tail -n 80 shots/app-log.txt 2>/dev/null || echo "(no app log)"
+          echo "--- screenshots taken"
+          ls -la shots/*.png 2>/dev/null || echo "(none)"
+
+      - name: Publish screenshots to a branch
+        if: always()
+        run: |
+          [ -n "$(ls shots/*.png 2>/dev/null)" ] || { echo "no screenshots to publish"; exit 0; }
+          mkdir -p /tmp/pub && cp shots/*.png shots/app-log.txt /tmp/pub/ 2>/dev/null || true
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan simulator-screenshots
+          git rm -rf . -q
+          cp /tmp/pub/* .
+          git add -A
+          git commit -q -m "Simulator screenshots for ${GITHUB_SHA::7}"
+          git push -f origin simulator-screenshots
 
       - name: Upload screenshots
         if: always()
