@@ -45,7 +45,7 @@ struct CodeEntity: IndexedEntity {
     }
 }
 
-struct CodeQuery: EntityStringQuery, IndexedEntityQuery {
+struct CodeQuery: EntityStringQuery {
     @MainActor
     private func all() throws -> [CodeEntity] {
         let context = try SharedContainer.app().mainContext
@@ -66,11 +66,5 @@ struct CodeQuery: EntityStringQuery, IndexedEntityQuery {
     @MainActor
     func suggestedEntities() async throws -> [CodeEntity] { try all() }
 
-    func reindexEntities(for identifiers: [UUID], indexDescription: CSSearchableIndexDescription) async throws {
-        try await SpotlightIndex.index.indexAppEntities(try await entities(for: identifiers))
-    }
 
-    func reindexAllEntities(indexDescription: CSSearchableIndexDescription) async throws {
-        try await SpotlightIndex.reindexAll()
-    }
 }

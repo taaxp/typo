@@ -57,7 +57,7 @@ struct TypoItemEntity: IndexedEntity {
     }
 }
 
-struct TypoItemQuery: EntityStringQuery, IndexedEntityQuery {
+struct TypoItemQuery: EntityStringQuery {
     @MainActor
     static func fetch(_ predicate: Predicate<TypoItem>? = nil, limit: Int? = nil) throws -> [TypoItem] {
         var descriptor = FetchDescriptor<TypoItem>(predicate: predicate, sortBy: [SortDescriptor(\.sortIndex, order: .reverse)])
@@ -82,14 +82,7 @@ struct TypoItemQuery: EntityStringQuery, IndexedEntityQuery {
         return (items.filter(\.isPinned) + items.filter { !$0.isPinned }).prefix(30).map(TypoItemEntity.init)
     }
 
-    func reindexEntities(for identifiers: [UUID], indexDescription: CSSearchableIndexDescription) async throws {
-        let found = try await entities(for: identifiers)
-        try await SpotlightIndex.index.indexAppEntities(found)
-    }
 
-    func reindexAllEntities(indexDescription: CSSearchableIndexDescription) async throws {
-        try await SpotlightIndex.reindexAll()
-    }
 }
 
 // MARK: - Collections
@@ -120,7 +113,7 @@ struct CollectionEntity: IndexedEntity {
     }
 }
 
-struct CollectionQuery: EntityStringQuery, IndexedEntityQuery {
+struct CollectionQuery: EntityStringQuery {
     @MainActor
     private func all() throws -> [TypoCollection] {
         try SharedContainer.app().mainContext.fetch(FetchDescriptor<TypoCollection>(sortBy: [SortDescriptor(\.name)]))
@@ -139,13 +132,7 @@ struct CollectionQuery: EntityStringQuery, IndexedEntityQuery {
     @MainActor
     func suggestedEntities() async throws -> [CollectionEntity] { try all().map(CollectionEntity.init) }
 
-    func reindexEntities(for identifiers: [UUID], indexDescription: CSSearchableIndexDescription) async throws {
-        try await SpotlightIndex.index.indexAppEntities(try await entities(for: identifiers))
-    }
 
-    func reindexAllEntities(indexDescription: CSSearchableIndexDescription) async throws {
-        try await SpotlightIndex.reindexAll()
-    }
 }
 
 // MARK: - Index
