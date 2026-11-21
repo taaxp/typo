@@ -4,6 +4,8 @@
 
 The fastest place to put things you'll need again. Save text, links, photos, GIFs and files from anywhere. Each saved item is one tap from your clipboard on iPhone, iPad and Mac, and from the Typo keyboard in any app.
 
+> **Scope (21 November 2026):** Typo is now an iPhone and iPad app only. The Apple Watch app, Mac app, Mac share extension, Mac quick panel and clipboard history, and iCloud hue sync were removed to keep it simple; mentions of them below describe removed work. To run it on your phone, see [docs/RUN_ON_IPHONE.md](docs/RUN_ON_IPHONE.md).
+
 Written November 2026. **Status (21 November 2026):** the iOS app (with its keyboard, share and widget extensions) now **builds with Xcode 26 and launches in the iPhone simulator**, checked by the GitHub Actions workflow in `.github/workflows/ios-build.yml`. The screenshots in `docs/screenshots/simulator/` are real simulator captures. **Not yet built or run:** the Mac app, the Apple Watch app (left out of the iOS build for now), the unit tests, and everything that needs a real device or a signed build: camera scanning, Face ID, the keyboard with Full Access, Apple Intelligence, iCloud sync, Siri, widgets and Spotlight. See "Status" below.
 
 ### Real screenshots (iPhone 17 Pro simulator, unsigned debug build, sample data)
@@ -162,10 +164,6 @@ Before you build for the first time:
 | **Text expansion** | `TextExpander`, `KeyboardActions`, `ItemDetailView` | Give any snippet a shortcut such as `;addr`. Typing it plus a space or punctuation with the Typo keyboard replaces it, and a suggestion strip appears while you type. A template with fields opens a fill panel inside the keyboard, typed with the Typo keys, and Insert moves the cursor to `{cursor}`. The Mac quick panel finds shortcuts too. |
 | **Spotlight** | `Shared/Intents/TypoEntities.swift`, `App/Spotlight/SpotlightSync.swift` | Items, collections and code names are indexed with `IndexedEntity` in a named index. Tapping a result opens it in Typo. There's a toggle and a "Rebuild Search Index" button in Settings. |
 | **Siri and Shortcuts** | `Shared/Intents/CopyIntents.swift`, `TypoShortcuts` | "Copy \<item\> from Typo", "Copy my \<network\> password with Typo" (from the Keychain, cleared after 60 s, never spoken), "Open my \<collection\> collection in Typo", plus Quick Save, Save to Typo and Show Code. |
-| **Apple Watch** | `Watch/`, `WatchWidgets/`, `App/Watch/WatchSync.swift`, `Shared/Watch/WatchPack.swift` | Codes marked "Show on Apple Watch" (member cards, guest Wi-Fi) are rendered on the iPhone and sent with WatchConnectivity. Pinned snippets are sent for reading. A watch-face complication and Smart Stack widget open a chosen card. |
-| **Mac share extension** | `MacShare/`, `Share/ShareView.swift` | The same share sheet as iOS, with tags and collections, from Safari, Finder, Photos or any app's Share menu. |
-| **Category hue sync** | `App/Sync/HueSync.swift` | Category hues follow you between iPhone, iPad and Mac through iCloud key-value storage. |
-| Mac quick panel and clipboard history | `App/Mac/` | ⌥Space (configurable) opens a floating search panel from any app. A menu bar icon opens it too. Clipboard history is opt-in, local only, 200 items or 7 days, and skips content marked private by password managers. |
 
 ## Architecture
 

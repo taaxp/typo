@@ -50,7 +50,7 @@
 	<key>TypoCloudKitContainer</key>
 	<string>$(ICLOUD_CONTAINER)</string>
 	<key>TypoKeychainGroup</key>
-	<string>$(AppIdentifierPrefix)com.starconnect.typo.shared</string>
+	<string>$(AppIdentifierPrefix)$(BUNDLE_ID_PREFIX).shared</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
